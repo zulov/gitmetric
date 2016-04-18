@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -84,12 +85,17 @@ public class Main extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         lstExt = new javax.swing.JList<>();
+        lblMaxSize = new javax.swing.JLabel();
+        lblMinSize = new javax.swing.JLabel();
+        spnMaxSize = new javax.swing.JSpinner();
+        spnMinSize = new javax.swing.JSpinner();
         pnlResult = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         lblCommits = new javax.swing.JLabel();
         btnTest = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlExt = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -125,27 +131,12 @@ public class Main extends javax.swing.JFrame {
                 sldMinCommitStateChanged(evt);
             }
         });
-        sldMinCommit.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                sldMinCommitPropertyChange(evt);
-            }
-        });
 
         sldMaxCommit.setPaintTicks(true);
         sldMaxCommit.setValue(100);
         sldMaxCommit.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 sldMaxCommitStateChanged(evt);
-            }
-        });
-        sldMaxCommit.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                sldMaxCommitMouseClicked(evt);
-            }
-        });
-        sldMaxCommit.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                sldMaxCommitPropertyChange(evt);
             }
         });
 
@@ -158,17 +149,29 @@ public class Main extends javax.swing.JFrame {
                 cobBranchesItemStateChanged(evt);
             }
         });
-        cobBranches.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                cobBranchesPropertyChange(evt);
-            }
-        });
 
         jLabel3.setText("Branche:");
 
         lstExt.setBorder(javax.swing.BorderFactory.createTitledBorder("Rozszerzenia"));
         lstExt.setLayoutOrientation(javax.swing.JList.VERTICAL_WRAP);
         jScrollPane2.setViewportView(lstExt);
+
+        lblMaxSize.setText("Do:");
+
+        lblMinSize.setText("Od:");
+
+        spnMaxSize.setValue(50000);
+        spnMaxSize.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spnMaxSizeStateChanged(evt);
+            }
+        });
+
+        spnMinSize.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spnMinSizeStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnlSettingLayout = new javax.swing.GroupLayout(pnlSetting);
         pnlSetting.setLayout(pnlSettingLayout);
@@ -181,9 +184,6 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(btnCalculate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
                         .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
@@ -200,7 +200,18 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(pnlSettingLayout.createSequentialGroup()
                         .addComponent(lblMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnlSettingLayout.createSequentialGroup()
+                        .addComponent(lblMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(spnMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnlSettingLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(pnlSettingLayout.createSequentialGroup()
+                        .addComponent(lblMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(spnMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         pnlSettingLayout.setVerticalGroup(
@@ -226,6 +237,14 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(cobBranches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblMinSize)
+                    .addComponent(spnMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblMaxSize)
+                    .addComponent(spnMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -287,6 +306,19 @@ public class Main extends javax.swing.JFrame {
         );
 
         jTabbedPane1.addTab("Rozszerzenia", pnlExt);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 784, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 422, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Słupki", jPanel1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -375,6 +407,9 @@ public class Main extends javax.swing.JFrame {
         DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
         diffFormatter.setRepository(git.getRepository());
         diffFormatter.setContext(0);
+        List<String> selectedExt = lstExt.getSelectedValuesList();
+       
+        Set<String> setExt = new HashSet<String>(selectedExt);
         try {
             List<DiffEntry> entries = diffFormatter.scan(newTreeIter, oldTreeIter);
             // Print the contents of the DiffEntries
@@ -385,9 +420,10 @@ public class Main extends javax.swing.JFrame {
                 int index = name.lastIndexOf('.');
                 if(index<0){continue;}
                 String ext = name.substring(index);
-
+  
                 List<? extends HunkHeader> hunks = fileHeader.getHunks();
-                for (HunkHeader hunk : hunks) {
+                for (HunkHeader hunk : hunks) {  
+                    if(hunk.getNewLineCount()>=(Integer)spnMaxSize.getValue()  || hunk.getNewLineCount()<=(Integer)spnMinSize.getValue()){continue;}
                     if(map.containsKey(ext)){
                         map.get(ext).lines+=hunk.getNewLineCount();
                     }else{
@@ -395,7 +431,7 @@ public class Main extends javax.swing.JFrame {
                     }
                 }
             }
-            paintPieChart(pnlExt,map.values());
+            paintPieChart(pnlExt,map.values(),setExt);
             Iterator<ExtData> iterator = map.values().iterator();
             lstExt.removeAll();
             DefaultListModel listModel = new DefaultListModel();
@@ -408,22 +444,6 @@ public class Main extends javax.swing.JFrame {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnTestActionPerformed
-
-    private void sldMaxCommitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sldMaxCommitMouseClicked
-       
-    }//GEN-LAST:event_sldMaxCommitMouseClicked
-
-    private void sldMinCommitPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_sldMinCommitPropertyChange
-        
-    }//GEN-LAST:event_sldMinCommitPropertyChange
-
-    private void sldMaxCommitPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_sldMaxCommitPropertyChange
-          
-    }//GEN-LAST:event_sldMaxCommitPropertyChange
-
-    private void cobBranchesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_cobBranchesPropertyChange
-        
-    }//GEN-LAST:event_cobBranchesPropertyChange
 
     private void sldMinCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMinCommitStateChanged
         if (sldMaxCommit.getValue()<=sldMinCommit.getValue()){
@@ -453,6 +473,22 @@ public class Main extends javax.swing.JFrame {
         }
         sliderValidator.validate(sldMinCommit, sldMaxCommit, logsList.size());
     }//GEN-LAST:event_cobBranchesItemStateChanged
+
+    private void spnMinSizeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnMinSizeStateChanged
+        if (((Integer)spnMaxSize.getValue())<=((Integer)spnMinSize.getValue())){
+            spnMinSize.setValue(((Integer)spnMaxSize.getValue())-1);
+        }
+        lblMinCommit.setText("Od: "+spnMinSize.getValue());
+        lblMaxCommit.setText("Do: "+spnMaxSize.getValue()); 
+    }//GEN-LAST:event_spnMinSizeStateChanged
+
+    private void spnMaxSizeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnMaxSizeStateChanged
+        if (((Integer)spnMaxSize.getValue())<=((Integer)spnMinSize.getValue())){
+            spnMaxSize.setValue(((Integer)spnMinSize.getValue())+1);
+        }
+        lblMinCommit.setText("Od: "+spnMinSize.getValue());
+        lblMaxCommit.setText("Do: "+spnMaxSize.getValue()); 
+    }//GEN-LAST:event_spnMaxSizeStateChanged
 
     /**
      * @param args the command line arguments
@@ -502,19 +538,24 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JList<String> jList1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblCommits;
     private javax.swing.JLabel lblMaxCommit;
+    private javax.swing.JLabel lblMaxSize;
     private javax.swing.JLabel lblMinCommit;
+    private javax.swing.JLabel lblMinSize;
     private javax.swing.JList<String> lstExt;
     private javax.swing.JPanel pnlExt;
     private javax.swing.JPanel pnlResult;
     private javax.swing.JPanel pnlSetting;
     private javax.swing.JSlider sldMaxCommit;
     private javax.swing.JSlider sldMinCommit;
+    private javax.swing.JSpinner spnMaxSize;
+    private javax.swing.JSpinner spnMinSize;
     private javax.swing.JTextField txtPath;
     // End of variables declaration//GEN-END:variables
     
@@ -537,11 +578,12 @@ public class Main extends javax.swing.JFrame {
             }
         }
     }
-    void paintPieChart(javax.swing.JPanel panel,Collection<ExtData> datas) {
+    void paintPieChart(javax.swing.JPanel panel,Collection<ExtData> datas,Set<String> setExt) {
         DefaultPieDataset dataset = new DefaultPieDataset();
         Iterator<ExtData> iterator = datas.iterator();
         while(iterator.hasNext()) {
             ExtData data = iterator.next();
+            if(!setExt.isEmpty()&& !setExt.contains(data.name)){continue;}  
             dataset.setValue(data.name +" - "+data.lines, data.lines);
         }
 
