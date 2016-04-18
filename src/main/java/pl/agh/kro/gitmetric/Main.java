@@ -5,6 +5,41 @@
  */
 package pl.agh.kro.gitmetric;
 
+import java.awt.BorderLayout;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand.ListMode;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.patch.FileHeader;
+import org.eclipse.jgit.patch.HunkHeader;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.data.general.DefaultPieDataset;
+import pl.agh.kro.gitmetric.validators.SliderValidator;
+
 /**
  *
  * @author Tomek
@@ -16,6 +51,11 @@ public class Main extends javax.swing.JFrame {
      */
     public Main() {
         initComponents();
+        try {
+            initMyComponents();
+        } catch (GitAPIException | IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -33,34 +73,38 @@ public class Main extends javax.swing.JFrame {
         btnCalculate = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList<>();
-        lblDateFrom = new javax.swing.JLabel();
-        lblDateTo = new javax.swing.JLabel();
+        lblMinCommit = new javax.swing.JLabel();
+        lblMaxCommit = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
-        jPanel1 = new javax.swing.JPanel();
-        chkExtJava = new javax.swing.JCheckBox();
-        chkExtTxt = new javax.swing.JCheckBox();
-        chkExtGraphic = new javax.swing.JCheckBox();
-        chkExtCsv = new javax.swing.JCheckBox();
-        chkExtJava4 = new javax.swing.JCheckBox();
-        chkExtJava5 = new javax.swing.JCheckBox();
-        chkExtJava6 = new javax.swing.JCheckBox();
-        chkExtPdf = new javax.swing.JCheckBox();
-        jSlider1 = new javax.swing.JSlider();
-        jSlider2 = new javax.swing.JSlider();
+        sldMinCommit = new javax.swing.JSlider();
+        sldMaxCommit = new javax.swing.JSlider();
         cobMetric = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
+        cobBranches = new javax.swing.JComboBox<>();
+        jLabel3 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        lstExt = new javax.swing.JList<>();
         pnlResult = new javax.swing.JPanel();
-        pnlPlot = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        lblCommits = new javax.swing.JLabel();
+        btnTest = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        pnlExt = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         pnlSetting.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Ustawienia"));
 
-        txtPath.setText("jTextField1");
+        txtPath.setText("D:\\Nauka\\SmartParkowanie\\.git");
 
         jLabel1.setText("Ścieżka repozytorium:");
 
         btnCalculate.setText("Oblicz");
+        btnCalculate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCalculateActionPerformed(evt);
+            }
+        });
 
         jList1.setBorder(javax.swing.BorderFactory.createTitledBorder("Użytkownicy"));
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
@@ -70,76 +114,61 @@ public class Main extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(jList1);
 
-        lblDateFrom.setText("Od:");
+        lblMinCommit.setText("Od:");
 
-        lblDateTo.setText("Do:");
+        lblMaxCommit.setText("Do:");
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("rozszerzenia"));
+        sldMinCommit.setPaintTicks(true);
+        sldMinCommit.setValue(0);
+        sldMinCommit.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                sldMinCommitStateChanged(evt);
+            }
+        });
+        sldMinCommit.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                sldMinCommitPropertyChange(evt);
+            }
+        });
 
-        chkExtJava.setText(".java");
-
-        chkExtTxt.setText(".txt");
-
-        chkExtGraphic.setText("grafika");
-
-        chkExtCsv.setText(".csv");
-
-        chkExtJava4.setText("Wszystko");
-
-        chkExtJava5.setText(".java");
-        chkExtJava5.setEnabled(false);
-
-        chkExtJava6.setText(".java");
-        chkExtJava6.setEnabled(false);
-
-        chkExtPdf.setText(".pdf");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(chkExtJava)
-                    .addComponent(chkExtTxt)
-                    .addComponent(chkExtCsv)
-                    .addComponent(chkExtGraphic))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(chkExtPdf)
-                    .addComponent(chkExtJava6)
-                    .addComponent(chkExtJava5)
-                    .addComponent(chkExtJava4))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(chkExtJava)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chkExtTxt))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(chkExtPdf)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chkExtJava6)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(chkExtCsv)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chkExtGraphic))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(chkExtJava5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chkExtJava4))))
-        );
+        sldMaxCommit.setPaintTicks(true);
+        sldMaxCommit.setValue(100);
+        sldMaxCommit.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                sldMaxCommitStateChanged(evt);
+            }
+        });
+        sldMaxCommit.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                sldMaxCommitMouseClicked(evt);
+            }
+        });
+        sldMaxCommit.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                sldMaxCommitPropertyChange(evt);
+            }
+        });
 
         cobMetric.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Linie kodu", "Cos innego" }));
 
         jLabel2.setText("Metryka:");
+
+        cobBranches.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cobBranchesItemStateChanged(evt);
+            }
+        });
+        cobBranches.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                cobBranchesPropertyChange(evt);
+            }
+        });
+
+        jLabel3.setText("Branche:");
+
+        lstExt.setBorder(javax.swing.BorderFactory.createTitledBorder("Rozszerzenia"));
+        lstExt.setLayoutOrientation(javax.swing.JList.VERTICAL_WRAP);
+        jScrollPane2.setViewportView(lstExt);
 
         javax.swing.GroupLayout pnlSettingLayout = new javax.swing.GroupLayout(pnlSetting);
         pnlSetting.setLayout(pnlSettingLayout);
@@ -148,45 +177,57 @@ public class Main extends javax.swing.JFrame {
             .addGroup(pnlSettingLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtPath)
+                    .addComponent(txtPath, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                     .addComponent(btnCalculate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(lblDateFrom)
-                            .addComponent(lblDateTo))
+                        .addComponent(jLabel1)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cobMetric, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cobBranches, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cobMetric, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane2)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlSettingLayout.createSequentialGroup()
+                        .addComponent(lblMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(sldMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnlSettingLayout.createSequentialGroup()
+                        .addComponent(lblMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         pnlSettingLayout.setVerticalGroup(
             pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlSettingLayout.createSequentialGroup()
-                .addComponent(jLabel1)
+                .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(pnlSettingLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblMinCommit))
+                    .addComponent(sldMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblDateFrom)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblDateTo)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblMaxCommit)
+                    .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(cobMetric, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 106, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(cobBranches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(22, 22, 22)
@@ -198,29 +239,54 @@ public class Main extends javax.swing.JFrame {
 
         pnlResult.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Wyniki"));
 
+        jLabel4.setText("Ilość comitów:");
+
+        lblCommits.setText("0000");
+
+        btnTest.setText("TEST");
+        btnTest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTestActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlResultLayout = new javax.swing.GroupLayout(pnlResult);
         pnlResult.setLayout(pnlResultLayout);
         pnlResultLayout.setHorizontalGroup(
             pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(pnlResultLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblCommits, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(32, 32, 32)
+                .addComponent(btnTest)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnlResultLayout.setVerticalGroup(
             pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
+            .addGroup(pnlResultLayout.createSequentialGroup()
+                .addGroup(pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(lblCommits)
+                    .addComponent(btnTest))
+                .addGap(0, 81, Short.MAX_VALUE))
         );
 
-        pnlPlot.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        pnlExt.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
-        javax.swing.GroupLayout pnlPlotLayout = new javax.swing.GroupLayout(pnlPlot);
-        pnlPlot.setLayout(pnlPlotLayout);
-        pnlPlotLayout.setHorizontalGroup(
-            pnlPlotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 777, Short.MAX_VALUE)
+        javax.swing.GroupLayout pnlExtLayout = new javax.swing.GroupLayout(pnlExt);
+        pnlExt.setLayout(pnlExtLayout);
+        pnlExtLayout.setHorizontalGroup(
+            pnlExtLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 780, Short.MAX_VALUE)
         );
-        pnlPlotLayout.setVerticalGroup(
-            pnlPlotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 442, Short.MAX_VALUE)
+        pnlExtLayout.setVerticalGroup(
+            pnlExtLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 418, Short.MAX_VALUE)
         );
+
+        jTabbedPane1.addTab("Rozszerzenia", pnlExt);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -232,24 +298,161 @@ public class Main extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(pnlResult, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pnlPlot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jTabbedPane1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(pnlSetting, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(pnlPlot, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(11, 11, 11)
-                        .addComponent(pnlResult, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(jTabbedPane1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pnlResult, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(pnlSetting, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
+        Iterable<RevCommit> logs = getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
+        if(logs==null){return;}
+        int count = 0;
+        for (RevCommit rev : logs) {
+            //System.out.println("Commit: " + rev  + ", name: " + rev.getFullMessage() + ", id: " + rev.getId().getName() );
+            count++;
+        }
+        lblCommits.setText(Integer.toString(count));
+    }//GEN-LAST:event_btnCalculateActionPerformed
+
+    private Iterable<RevCommit> getLogs(String repoPath, String branchName) {
+        if(repoPath.isEmpty() || branchName.isEmpty()){return null;}
+        Repository repository = GitUtils.getRepository(repoPath);
+        Git git = new Git(repository);
+        Iterable<RevCommit> logs = null;
+        try {
+            logs = git.log().add(repository.resolve(branchName)).call();
+        } catch (MissingObjectException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IncorrectObjectTypeException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return logs;
+    }
+
+    private void btnTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTestActionPerformed
+        Repository repository = GitUtils.getRepository(txtPath.getText());
+        Git git = new Git(repository);
+        
+        Iterable<RevCommit> logs = getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
+        if(logs==null){return;}
+        List<RevCommit> logsList = new ArrayList<>();
+        for (RevCommit rev : logs) {
+            logsList.add(rev);
+        }
+        RevCommit oldCommit = logsList.get(sldMinCommit.getValue());
+        RevCommit newCommit = logsList.get(sldMaxCommit.getValue());
+
+        // Obtain tree iterators to traverse the tree of the old/new commit
+        ObjectReader reader = git.getRepository().newObjectReader();
+        CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+        CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+        try {
+            oldTreeIter.reset(reader, oldCommit.getTree());
+            newTreeIter.reset(reader, newCommit.getTree());
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // Use a DiffFormatter to compare new and old tree and return a list of changes
+        DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+        diffFormatter.setRepository(git.getRepository());
+        diffFormatter.setContext(0);
+        try {
+            List<DiffEntry> entries = diffFormatter.scan(newTreeIter, oldTreeIter);
+            // Print the contents of the DiffEntries
+            Map<String,ExtData> map = new HashMap<>();
+            for (DiffEntry entry : entries) {
+                FileHeader fileHeader = diffFormatter.toFileHeader(entry);
+                String name = fileHeader.getNewPath();
+                int index = name.lastIndexOf('.');
+                if(index<0){continue;}
+                String ext = name.substring(index);
+
+                List<? extends HunkHeader> hunks = fileHeader.getHunks();
+                for (HunkHeader hunk : hunks) {
+                    if(map.containsKey(ext)){
+                        map.get(ext).lines+=hunk.getNewLineCount();
+                    }else{
+                        map.put(ext, new ExtData(ext,hunk.getNewLineCount()));
+                    }
+                }
+            }
+            paintPieChart(pnlExt,map.values());
+            Iterator<ExtData> iterator = map.values().iterator();
+            lstExt.removeAll();
+            DefaultListModel listModel = new DefaultListModel();
+            while(iterator.hasNext()) {
+                ExtData data = iterator.next();
+                listModel.addElement(data.name);
+            }
+            lstExt.setModel(listModel);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnTestActionPerformed
+
+    private void sldMaxCommitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sldMaxCommitMouseClicked
+       
+    }//GEN-LAST:event_sldMaxCommitMouseClicked
+
+    private void sldMinCommitPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_sldMinCommitPropertyChange
+        
+    }//GEN-LAST:event_sldMinCommitPropertyChange
+
+    private void sldMaxCommitPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_sldMaxCommitPropertyChange
+          
+    }//GEN-LAST:event_sldMaxCommitPropertyChange
+
+    private void cobBranchesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_cobBranchesPropertyChange
+        
+    }//GEN-LAST:event_cobBranchesPropertyChange
+
+    private void sldMinCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMinCommitStateChanged
+        if (sldMaxCommit.getValue()<=sldMinCommit.getValue()){
+            sldMinCommit.setValue(sldMaxCommit.getValue()-1);
+        }
+        lblMinCommit.setText("Od: "+sldMinCommit.getValue());
+        lblMaxCommit.setText("Do: "+sldMaxCommit.getValue()); 
+    }//GEN-LAST:event_sldMinCommitStateChanged
+
+    private void sldMaxCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMaxCommitStateChanged
+        if (sldMaxCommit.getValue()<=sldMinCommit.getValue()){
+            sldMaxCommit.setValue(sldMinCommit.getValue()+1);
+        }
+        lblMinCommit.setText("Od: "+sldMinCommit.getValue());
+        lblMaxCommit.setText("Do: "+sldMaxCommit.getValue());   
+    }//GEN-LAST:event_sldMaxCommitStateChanged
+
+    private void cobBranchesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cobBranchesItemStateChanged
+        String path = txtPath.getText();
+        if(cobBranches.getSelectedIndex()==-1){return;}
+        String branch = cobBranches.getSelectedItem().toString();
+        Iterable<RevCommit> logs = getLogs(path, branch);
+        if(logs==null){return;}
+        List<RevCommit> logsList = new ArrayList<>();
+        for (RevCommit rev : logs) {
+            logsList.add(rev);
+        }
+        sliderValidator.validate(sldMinCommit, sldMaxCommit, logsList.size());
+    }//GEN-LAST:event_cobBranchesItemStateChanged
 
     /**
      * @param args the command line arguments
@@ -267,30 +470,18 @@ public class Main extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-try {
+        try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         /* Create and display the form */
@@ -303,28 +494,79 @@ try {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCalculate;
-    private javax.swing.JCheckBox chkExtCsv;
-    private javax.swing.JCheckBox chkExtGraphic;
-    private javax.swing.JCheckBox chkExtJava;
-    private javax.swing.JCheckBox chkExtJava4;
-    private javax.swing.JCheckBox chkExtJava5;
-    private javax.swing.JCheckBox chkExtJava6;
-    private javax.swing.JCheckBox chkExtPdf;
-    private javax.swing.JCheckBox chkExtTxt;
+    private javax.swing.JButton btnTest;
+    private javax.swing.JComboBox<String> cobBranches;
     private javax.swing.JComboBox<String> cobMetric;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JList<String> jList1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSlider jSlider1;
-    private javax.swing.JSlider jSlider2;
-    private javax.swing.JLabel lblDateFrom;
-    private javax.swing.JLabel lblDateTo;
-    private javax.swing.JPanel pnlPlot;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JLabel lblCommits;
+    private javax.swing.JLabel lblMaxCommit;
+    private javax.swing.JLabel lblMinCommit;
+    private javax.swing.JList<String> lstExt;
+    private javax.swing.JPanel pnlExt;
     private javax.swing.JPanel pnlResult;
     private javax.swing.JPanel pnlSetting;
+    private javax.swing.JSlider sldMaxCommit;
+    private javax.swing.JSlider sldMinCommit;
     private javax.swing.JTextField txtPath;
     // End of variables declaration//GEN-END:variables
+    
+    private SliderValidator sliderValidator = new SliderValidator();
+    
+    private void initMyComponents() throws GitAPIException, IOException {
+        try (Repository repository = GitUtils.getRepository(txtPath.getText())) {
+            try (Git git = new Git(repository)) {
+                List<Ref> call = git.branchList().call();
+                cobBranches.removeAllItems();
+                for (Ref ref : call) {
+                    cobBranches.addItem(ref.getName());
+                }
+
+                System.out.println("Now including remote branches:");
+                call = git.branchList().setListMode(ListMode.ALL).call();
+                for (Ref ref : call) {
+                    cobBranches.addItem(ref.getName());
+                }
+            }
+        }
+    }
+    void paintPieChart(javax.swing.JPanel panel,Collection<ExtData> datas) {
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        Iterator<ExtData> iterator = datas.iterator();
+        while(iterator.hasNext()) {
+            ExtData data = iterator.next();
+            dataset.setValue(data.name +" - "+data.lines, data.lines);
+        }
+
+        JFreeChart chart = ChartFactory.createPieChart3D(
+                "Rozkład rozszerzeń", // chart title                   
+                dataset, // data 
+                true, // include legend                   
+                true,
+                false);
+
+        final PiePlot3D plot = (PiePlot3D) chart.getPlot();
+        plot.setStartAngle(0);
+        plot.setForegroundAlpha(0.75f);
+        plot.setInteriorGap(0.05);
+
+//        for (int i = 0; i < datas.size(); i++) {
+//            plot.setSectionPaint(datas.get(i).name, partie[i].color);
+//        }
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(panel.getSize()));
+        chartPanel.setVisible(true);
+        panel.setLayout(new java.awt.BorderLayout());
+        panel.removeAll();
+        panel.add(chartPanel, BorderLayout.CENTER);
+        panel.validate();
+    }
+    
 }
