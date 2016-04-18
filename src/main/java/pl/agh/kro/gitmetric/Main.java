@@ -353,7 +353,9 @@ public class Main extends javax.swing.JFrame {
 
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
         Iterable<RevCommit> logs = getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
-        if(logs==null){return;}
+        if (logs == null) {
+            return;
+        }
         int count = 0;
         for (RevCommit rev : logs) {
             //System.out.println("Commit: " + rev  + ", name: " + rev.getFullMessage() + ", id: " + rev.getId().getName() );
@@ -362,8 +364,10 @@ public class Main extends javax.swing.JFrame {
         lblCommits.setText(Integer.toString(count));
     }//GEN-LAST:event_btnCalculateActionPerformed
 
-    private Iterable<RevCommit> getLogs(String repoPath, String branchName) {
-        if(repoPath.isEmpty() || branchName.isEmpty()){return null;}
+    private List<RevCommit> getLogs(String repoPath, String branchName) {
+        if (repoPath.isEmpty() || branchName.isEmpty()) {
+            return null;
+        }
         Repository repository = GitUtils.getRepository(repoPath);
         Git git = new Git(repository);
         Iterable<RevCommit> logs = null;
@@ -376,118 +380,142 @@ public class Main extends javax.swing.JFrame {
         } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return logs;
+        if (logs == null) {
+            return new ArrayList<>(0);
+        }
+        List<RevCommit> logsList = new ArrayList<>();
+        for (RevCommit rev : logs) {
+            logsList.add(rev);
+        }
+        return logsList;
     }
 
     private void btnTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTestActionPerformed
         Repository repository = GitUtils.getRepository(txtPath.getText());
         Git git = new Git(repository);
-        
-        Iterable<RevCommit> logs = getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
-        if(logs==null){return;}
-        List<RevCommit> logsList = new ArrayList<>();
-        for (RevCommit rev : logs) {
-            logsList.add(rev);
-        }
-        RevCommit oldCommit = logsList.get(sldMinCommit.getValue());
-        RevCommit newCommit = logsList.get(sldMaxCommit.getValue());
+
+        List<RevCommit> logs = getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
+
+        RevCommit firstCommit = logs.get(sldMinCommit.getValue());
+        RevCommit lastCommit = logs.get(sldMaxCommit.getValue());
 
         // Obtain tree iterators to traverse the tree of the old/new commit
         ObjectReader reader = git.getRepository().newObjectReader();
         CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
         CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
         try {
-            oldTreeIter.reset(reader, oldCommit.getTree());
-            newTreeIter.reset(reader, newCommit.getTree());
+            oldTreeIter.reset(reader, firstCommit.getTree());
+            newTreeIter.reset(reader, lastCommit.getTree());
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        // Use a DiffFormatter to compare new and old tree and return a list of changes
-        DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-        diffFormatter.setRepository(git.getRepository());
-        diffFormatter.setContext(0);
-        List<String> selectedExt = lstExt.getSelectedValuesList();
-       
-        Set<String> setExt = new HashSet<String>(selectedExt);
+        DiffFormatter diffFormatter = prepareDiffFormater(git);
+
+        Set<String> setExt = new HashSet<>(lstExt.getSelectedValuesList());
         try {
             List<DiffEntry> entries = diffFormatter.scan(newTreeIter, oldTreeIter);
             // Print the contents of the DiffEntries
-            Map<String,ExtData> map = new HashMap<>();
+            Map<String, ExtData> map = new HashMap<>();
             for (DiffEntry entry : entries) {
                 FileHeader fileHeader = diffFormatter.toFileHeader(entry);
-                String name = fileHeader.getNewPath();
-                int index = name.lastIndexOf('.');
-                if(index<0){continue;}
-                String ext = name.substring(index);
-  
-                List<? extends HunkHeader> hunks = fileHeader.getHunks();
-                for (HunkHeader hunk : hunks) {  
-                    if(hunk.getNewLineCount()>=(Integer)spnMaxSize.getValue()  || hunk.getNewLineCount()<=(Integer)spnMinSize.getValue()){continue;}
-                    if(map.containsKey(ext)){
-                        map.get(ext).lines+=hunk.getNewLineCount();
-                    }else{
-                        map.put(ext, new ExtData(ext,hunk.getNewLineCount()));
+                String ext = getExt(fileHeader.getNewPath());
+                if (ext == null) {
+                    continue;
+                }
+
+                for (HunkHeader hunk : fileHeader.getHunks()) {
+                    if (inValidSize(hunk)) {
+                        continue;
                     }
+                    addToMap(map, ext, hunk.getNewLineCount());
                 }
             }
-            paintPieChart(pnlExt,map.values(),setExt);
-            Iterator<ExtData> iterator = map.values().iterator();
-            lstExt.removeAll();
-            DefaultListModel listModel = new DefaultListModel();
-            while(iterator.hasNext()) {
-                ExtData data = iterator.next();
-                listModel.addElement(data.name);
-            }
-            lstExt.setModel(listModel);
+            paintPieChart(pnlExt, map.values(), setExt);
+            fillListExt(map);
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnTestActionPerformed
 
-    private void sldMinCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMinCommitStateChanged
-        if (sldMaxCommit.getValue()<=sldMinCommit.getValue()){
-            sldMinCommit.setValue(sldMaxCommit.getValue()-1);
+    private boolean inValidSize(HunkHeader hunk) {
+        return hunk.getNewLineCount() >= (Integer) spnMaxSize.getValue() 
+                || hunk.getNewLineCount() <= (Integer) spnMinSize.getValue();
+    }
+
+    private DiffFormatter prepareDiffFormater(Git git) {
+        // Use a DiffFormatter to compare new and old tree and return a list of changes
+        DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+        diffFormatter.setRepository(git.getRepository());
+        diffFormatter.setContext(0);
+        return diffFormatter;
+    }
+
+    private void fillListExt(Map<String, ExtData> map) {
+        Iterator<ExtData> iterator = map.values().iterator();
+        lstExt.removeAll();
+        DefaultListModel listModel = new DefaultListModel();
+        while (iterator.hasNext()) {
+            ExtData data = iterator.next();
+            listModel.addElement(data.name);
         }
-        lblMinCommit.setText("Od: "+sldMinCommit.getValue());
-        lblMaxCommit.setText("Do: "+sldMaxCommit.getValue()); 
+        lstExt.setModel(listModel);
+    }
+
+    private String getExt(String name) {
+        int index = name.lastIndexOf('.');
+        if (index < 0) {
+            return null;
+        }
+        String ext = name.substring(index);
+        return ext;
+    }
+
+    private void addToMap(Map<String, ExtData> map, String ext, int lines) {
+        if (map.containsKey(ext)) {
+            map.get(ext).lines += lines;
+        } else {
+            map.put(ext, new ExtData(ext, lines));
+        }
+    }
+
+    private void sldMinCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMinCommitStateChanged
+        if (sldMaxCommit.getValue() <= sldMinCommit.getValue()) {
+            sldMinCommit.setValue(sldMaxCommit.getValue() - 1);
+        }
+        lblMinCommit.setText("Od: " + sldMinCommit.getValue());
+        lblMaxCommit.setText("Do: " + sldMaxCommit.getValue());
     }//GEN-LAST:event_sldMinCommitStateChanged
 
     private void sldMaxCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMaxCommitStateChanged
-        if (sldMaxCommit.getValue()<=sldMinCommit.getValue()){
-            sldMaxCommit.setValue(sldMinCommit.getValue()+1);
+        if (sldMaxCommit.getValue() <= sldMinCommit.getValue()) {
+            sldMaxCommit.setValue(sldMinCommit.getValue() + 1);
         }
-        lblMinCommit.setText("Od: "+sldMinCommit.getValue());
-        lblMaxCommit.setText("Do: "+sldMaxCommit.getValue());   
+        lblMinCommit.setText("Od: " + sldMinCommit.getValue());
+        lblMaxCommit.setText("Do: " + sldMaxCommit.getValue());
     }//GEN-LAST:event_sldMaxCommitStateChanged
 
     private void cobBranchesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cobBranchesItemStateChanged
         String path = txtPath.getText();
-        if(cobBranches.getSelectedIndex()==-1){return;}
-        String branch = cobBranches.getSelectedItem().toString();
-        Iterable<RevCommit> logs = getLogs(path, branch);
-        if(logs==null){return;}
-        List<RevCommit> logsList = new ArrayList<>();
-        for (RevCommit rev : logs) {
-            logsList.add(rev);
+        if (cobBranches.getSelectedIndex() == -1) {
+            return;
         }
-        sliderValidator.validate(sldMinCommit, sldMaxCommit, logsList.size());
+        String branch = cobBranches.getSelectedItem().toString();
+        List<RevCommit> logs = getLogs(path, branch);
+
+        sliderValidator.validate(sldMinCommit, sldMaxCommit, logs.size());
     }//GEN-LAST:event_cobBranchesItemStateChanged
 
     private void spnMinSizeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnMinSizeStateChanged
-        if (((Integer)spnMaxSize.getValue())<=((Integer)spnMinSize.getValue())){
-            spnMinSize.setValue(((Integer)spnMaxSize.getValue())-1);
+        if (((Integer) spnMaxSize.getValue()) <= ((Integer) spnMinSize.getValue())) {
+            spnMinSize.setValue(((Integer) spnMaxSize.getValue()) - 1);
         }
-        lblMinCommit.setText("Od: "+spnMinSize.getValue());
-        lblMaxCommit.setText("Do: "+spnMaxSize.getValue()); 
     }//GEN-LAST:event_spnMinSizeStateChanged
 
     private void spnMaxSizeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnMaxSizeStateChanged
-        if (((Integer)spnMaxSize.getValue())<=((Integer)spnMinSize.getValue())){
-            spnMaxSize.setValue(((Integer)spnMinSize.getValue())+1);
+        if (((Integer) spnMaxSize.getValue()) <= ((Integer) spnMinSize.getValue())) {
+            spnMaxSize.setValue(((Integer) spnMinSize.getValue()) + 1);
         }
-        lblMinCommit.setText("Od: "+spnMinSize.getValue());
-        lblMaxCommit.setText("Do: "+spnMaxSize.getValue()); 
     }//GEN-LAST:event_spnMaxSizeStateChanged
 
     /**
@@ -558,9 +586,9 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JSpinner spnMinSize;
     private javax.swing.JTextField txtPath;
     // End of variables declaration//GEN-END:variables
-    
+
     private SliderValidator sliderValidator = new SliderValidator();
-    
+
     private void initMyComponents() throws GitAPIException, IOException {
         try (Repository repository = GitUtils.getRepository(txtPath.getText())) {
             try (Git git = new Git(repository)) {
@@ -578,13 +606,16 @@ public class Main extends javax.swing.JFrame {
             }
         }
     }
-    void paintPieChart(javax.swing.JPanel panel,Collection<ExtData> datas,Set<String> setExt) {
+
+    void paintPieChart(javax.swing.JPanel panel, Collection<ExtData> datas, Set<String> setExt) {
         DefaultPieDataset dataset = new DefaultPieDataset();
         Iterator<ExtData> iterator = datas.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             ExtData data = iterator.next();
-            if(!setExt.isEmpty()&& !setExt.contains(data.name)){continue;}  
-            dataset.setValue(data.name +" - "+data.lines, data.lines);
+            if (!setExt.isEmpty() && !setExt.contains(data.name)) {
+                continue;
+            }
+            dataset.setValue(data.name + " - " + data.lines, data.lines);
         }
 
         JFreeChart chart = ChartFactory.createPieChart3D(
@@ -610,5 +641,5 @@ public class Main extends javax.swing.JFrame {
         panel.add(chartPanel, BorderLayout.CENTER);
         panel.validate();
     }
-    
+
 }
