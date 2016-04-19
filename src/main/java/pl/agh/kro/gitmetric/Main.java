@@ -373,10 +373,6 @@ public class Main extends javax.swing.JFrame {
         Iterable<RevCommit> logs = null;
         try {
             logs = git.log().add(repository.resolve(branchName)).call();
-        } catch (MissingObjectException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IncorrectObjectTypeException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -415,21 +411,19 @@ public class Main extends javax.swing.JFrame {
         Set<String> setExt = new HashSet<>(lstExt.getSelectedValuesList());
         try {
             List<DiffEntry> entries = diffFormatter.scan(newTreeIter, oldTreeIter);
-            // Print the contents of the DiffEntries
+
             Map<String, ExtData> map = new HashMap<>();
             for (DiffEntry entry : entries) {
                 FileHeader fileHeader = diffFormatter.toFileHeader(entry);
                 String ext = getExt(fileHeader.getNewPath());
-                if (ext == null) {
-                    continue;
+                if (ext != null) {
+                    for (HunkHeader hunk : fileHeader.getHunks()) {
+                        if (!inValidSize(hunk)) {
+                            addToMap(map, ext, hunk.getNewLineCount());
+                        }
+                    }
                 }
 
-                for (HunkHeader hunk : fileHeader.getHunks()) {
-                    if (inValidSize(hunk)) {
-                        continue;
-                    }
-                    addToMap(map, ext, hunk.getNewLineCount());
-                }
             }
             paintPieChart(pnlExt, map.values(), setExt);
             fillListExt(map);
@@ -439,12 +433,11 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_btnTestActionPerformed
 
     private boolean inValidSize(HunkHeader hunk) {
-        return hunk.getNewLineCount() >= (Integer) spnMaxSize.getValue() 
+        return hunk.getNewLineCount() >= (Integer) spnMaxSize.getValue()
                 || hunk.getNewLineCount() <= (Integer) spnMinSize.getValue();
     }
 
     private DiffFormatter prepareDiffFormater(Git git) {
-        // Use a DiffFormatter to compare new and old tree and return a list of changes
         DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
         diffFormatter.setRepository(git.getRepository());
         diffFormatter.setContext(0);
