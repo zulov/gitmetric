@@ -7,7 +7,6 @@ package pl.agh.kro.gitmetric;
 
 import java.awt.BorderLayout;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,20 +17,25 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand.ListMode;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.jfree.chart.ChartFactory;
@@ -73,7 +77,7 @@ public class Main extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         btnCalculate = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        lstUsers = new javax.swing.JList<>();
         lblMinCommit = new javax.swing.JLabel();
         lblMaxCommit = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
@@ -90,12 +94,12 @@ public class Main extends javax.swing.JFrame {
         spnMaxSize = new javax.swing.JSpinner();
         spnMinSize = new javax.swing.JSpinner();
         pnlResult = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        lblCommits = new javax.swing.JLabel();
         btnTest = new javax.swing.JButton();
+        btnTest2 = new javax.swing.JButton();
+        btnTest3 = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlExt = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
+        pnlBars = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -112,13 +116,13 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        jList1.setBorder(javax.swing.BorderFactory.createTitledBorder("Użytkownicy"));
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+        lstUsers.setBorder(javax.swing.BorderFactory.createTitledBorder("Użytkownicy"));
+        lstUsers.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(lstUsers);
 
         lblMinCommit.setText("Od:");
 
@@ -258,14 +262,24 @@ public class Main extends javax.swing.JFrame {
 
         pnlResult.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Wyniki"));
 
-        jLabel4.setText("Ilość comitów:");
-
-        lblCommits.setText("0000");
-
-        btnTest.setText("TEST");
+        btnTest.setText("Rozkład");
         btnTest.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnTestActionPerformed(evt);
+            }
+        });
+
+        btnTest2.setText("TEST2");
+        btnTest2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTest2ActionPerformed(evt);
+            }
+        });
+
+        btnTest3.setText("Właściwości");
+        btnTest3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTest3ActionPerformed(evt);
             }
         });
 
@@ -275,21 +289,22 @@ public class Main extends javax.swing.JFrame {
             pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlResultLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(lblCommits, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(32, 32, 32)
                 .addComponent(btnTest)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnTest2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnTest3)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnlResultLayout.setVerticalGroup(
             pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlResultLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(lblCommits)
-                    .addComponent(btnTest))
-                .addGap(0, 81, Short.MAX_VALUE))
+                    .addComponent(btnTest)
+                    .addComponent(btnTest2)
+                    .addComponent(btnTest3))
+                .addContainerGap(70, Short.MAX_VALUE))
         );
 
         pnlExt.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -307,18 +322,18 @@ public class Main extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Rozszerzenia", pnlExt);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout pnlBarsLayout = new javax.swing.GroupLayout(pnlBars);
+        pnlBars.setLayout(pnlBarsLayout);
+        pnlBarsLayout.setHorizontalGroup(
+            pnlBarsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 784, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        pnlBarsLayout.setVerticalGroup(
+            pnlBarsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 422, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Słupki", jPanel1);
+        jTabbedPane1.addTab("Słupki", pnlBars);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -352,16 +367,7 @@ public class Main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
-        Iterable<RevCommit> logs = GitUtils.getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
-        if (logs == null) {
-            return;
-        }
-        int count = 0;
-        for (RevCommit rev : logs) {
-            //System.out.println("Commit: " + rev  + ", name: " + rev.getFullMessage() + ", id: " + rev.getId().getName() );
-            count++;
-        }
-        lblCommits.setText(Integer.toString(count));
+
     }//GEN-LAST:event_btnCalculateActionPerformed
 
 
@@ -431,6 +437,15 @@ public class Main extends javax.swing.JFrame {
         }
         lstExt.setModel(listModel);
     }
+    
+    private void fillListUsers(Set<String> users) {
+        lstUsers.removeAll();
+        DefaultListModel listModel = new DefaultListModel();
+        for(String user : users) {
+            listModel.addElement(user);
+        }
+        lstUsers.setModel(listModel);
+    }
 
     private String getExt(String name) {
         int index = name.lastIndexOf('.');
@@ -488,6 +503,54 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_spnMaxSizeStateChanged
 
+    private void btnTest2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTest2ActionPerformed
+        Repository repository = GitUtils.getRepository(txtPath.getText());
+        ObjectId commitID = null;
+
+        try {
+            commitID = repository.resolve(cobBranches.getSelectedItem().toString());
+        } catch (RevisionSyntaxException | IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        BlameCommand blamer = new BlameCommand(repository);
+        blamer.setStartCommit(commitID);
+        blamer.setFilePath("README.md");
+        BlameResult blame = null;
+        try {
+            blame = blamer.call();
+        } catch (GitAPIException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // read the number of lines from the commit to not look at changes in the working copy
+        Set<String> users = new HashSet<>();
+        try {
+            int lines = GitUtils.countFiles(repository, commitID, "README.md");
+            for (int i = 0; i < lines; i++) {
+                RevCommit commit = blame.getSourceCommit(i);
+                PersonIdent person = blame.getSourceAuthor(i);
+                users.add(person.getName());
+                System.out.println("Line: " + i + ": " + commit + " - " + person.getName());
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        fillListUsers(users);
+    }//GEN-LAST:event_btnTest2ActionPerformed
+
+    private void btnTest3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTest3ActionPerformed
+        Repository repository = GitUtils.getRepository(txtPath.getText());
+          
+        try {
+            // find the Tree for current HEAD
+            RevTree tree = GitUtils.getTree(repository);
+            GitUtils.printFile(repository, tree);
+            GitUtils.printDirectory(repository, tree);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnTest3ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -529,24 +592,24 @@ public class Main extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCalculate;
     private javax.swing.JButton btnTest;
+    private javax.swing.JButton btnTest2;
+    private javax.swing.JButton btnTest3;
     private javax.swing.JComboBox<String> cobBranches;
     private javax.swing.JComboBox<String> cobMetric;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JList<String> jList1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JLabel lblCommits;
     private javax.swing.JLabel lblMaxCommit;
     private javax.swing.JLabel lblMaxSize;
     private javax.swing.JLabel lblMinCommit;
     private javax.swing.JLabel lblMinSize;
     private javax.swing.JList<String> lstExt;
+    private javax.swing.JList<String> lstUsers;
+    private javax.swing.JPanel pnlBars;
     private javax.swing.JPanel pnlExt;
     private javax.swing.JPanel pnlResult;
     private javax.swing.JPanel pnlSetting;
