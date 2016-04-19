@@ -352,7 +352,7 @@ public class Main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
-        Iterable<RevCommit> logs = getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
+        Iterable<RevCommit> logs = GitUtils.getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
         if (logs == null) {
             return;
         }
@@ -364,33 +364,10 @@ public class Main extends javax.swing.JFrame {
         lblCommits.setText(Integer.toString(count));
     }//GEN-LAST:event_btnCalculateActionPerformed
 
-    private List<RevCommit> getLogs(String repoPath, String branchName) {
-        if (repoPath.isEmpty() || branchName.isEmpty()) {
-            return null;
-        }
-        Repository repository = GitUtils.getRepository(repoPath);
-        Git git = new Git(repository);
-        Iterable<RevCommit> logs = null;
-        try {
-            logs = git.log().add(repository.resolve(branchName)).call();
-        } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        if (logs == null) {
-            return new ArrayList<>(0);
-        }
-        List<RevCommit> logsList = new ArrayList<>();
-        for (RevCommit rev : logs) {
-            logsList.add(rev);
-        }
-        return logsList;
-    }
 
     private void btnTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTestActionPerformed
-        Repository repository = GitUtils.getRepository(txtPath.getText());
-        Git git = new Git(repository);
-
-        List<RevCommit> logs = getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
+        Git git = GitUtils.getGit(txtPath.getText());
+        List<RevCommit> logs = GitUtils.getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
 
         RevCommit firstCommit = logs.get(sldMinCommit.getValue());
         RevCommit lastCommit = logs.get(sldMaxCommit.getValue());
@@ -489,12 +466,12 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_sldMaxCommitStateChanged
 
     private void cobBranchesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cobBranchesItemStateChanged
-        String path = txtPath.getText();
         if (cobBranches.getSelectedIndex() == -1) {
             return;
         }
+        String path = txtPath.getText();
         String branch = cobBranches.getSelectedItem().toString();
-        List<RevCommit> logs = getLogs(path, branch);
+        List<RevCommit> logs = GitUtils.getLogs(path, branch);
 
         sliderValidator.validate(sldMinCommit, sldMaxCommit, logs.size());
     }//GEN-LAST:event_cobBranchesItemStateChanged
@@ -583,21 +560,19 @@ public class Main extends javax.swing.JFrame {
     private SliderValidator sliderValidator = new SliderValidator();
 
     private void initMyComponents() throws GitAPIException, IOException {
-        try (Repository repository = GitUtils.getRepository(txtPath.getText())) {
-            try (Git git = new Git(repository)) {
-                List<Ref> call = git.branchList().call();
-                cobBranches.removeAllItems();
-                for (Ref ref : call) {
-                    cobBranches.addItem(ref.getName());
-                }
-
-                System.out.println("Now including remote branches:");
-                call = git.branchList().setListMode(ListMode.ALL).call();
-                for (Ref ref : call) {
-                    cobBranches.addItem(ref.getName());
-                }
-            }
+        Git git = GitUtils.getGit(txtPath.getText());
+        List<Ref> call = git.branchList().call();
+        cobBranches.removeAllItems();
+        for (Ref ref : call) {
+            cobBranches.addItem(ref.getName());
         }
+
+        System.out.println("Now including remote branches:");
+        call = git.branchList().setListMode(ListMode.ALL).call();
+        for (Ref ref : call) {
+            cobBranches.addItem(ref.getName());
+        }
+
     }
 
     void paintPieChart(javax.swing.JPanel panel, Collection<ExtData> datas, Set<String> setExt) {
