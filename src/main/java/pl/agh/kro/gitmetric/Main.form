@@ -361,6 +361,8 @@
                   <Component id="btnTest2" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="btnTest3" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="btnBlame" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -373,6 +375,7 @@
                       <Component id="btnTest" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btnTest2" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btnTest3" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnBlame" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace pref="70" max="32767" attributes="0"/>
               </Group>
@@ -402,6 +405,14 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnTest3ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnBlame">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Blame"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnBlameActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

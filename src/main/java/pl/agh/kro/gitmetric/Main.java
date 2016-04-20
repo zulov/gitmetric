@@ -5,6 +5,7 @@
  */
 package pl.agh.kro.gitmetric;
 
+import pl.agh.kro.gitmetric.git.GitUtils;
 import java.awt.BorderLayout;
 import java.io.IOException;
 import java.util.Collection;
@@ -97,6 +98,7 @@ public class Main extends javax.swing.JFrame {
         btnTest = new javax.swing.JButton();
         btnTest2 = new javax.swing.JButton();
         btnTest3 = new javax.swing.JButton();
+        btnBlame = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlExt = new javax.swing.JPanel();
         pnlBars = new javax.swing.JPanel();
@@ -283,6 +285,13 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        btnBlame.setText("Blame");
+        btnBlame.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBlameActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlResultLayout = new javax.swing.GroupLayout(pnlResult);
         pnlResult.setLayout(pnlResultLayout);
         pnlResultLayout.setHorizontalGroup(
@@ -294,6 +303,8 @@ public class Main extends javax.swing.JFrame {
                 .addComponent(btnTest2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnTest3)
+                .addGap(18, 18, 18)
+                .addComponent(btnBlame)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnlResultLayout.setVerticalGroup(
@@ -303,7 +314,8 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnTest)
                     .addComponent(btnTest2)
-                    .addComponent(btnTest3))
+                    .addComponent(btnTest3)
+                    .addComponent(btnBlame))
                 .addContainerGap(70, Short.MAX_VALUE))
         );
 
@@ -522,9 +534,9 @@ public class Main extends javax.swing.JFrame {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        // read the number of lines from the commit to not look at changes in the working copy
-        Set<String> users = new HashSet<>();
+        // read the number of lines from the commit to not look at changes in the working copy 
         try {
+            Set<String> users = new HashSet<>();
             int lines = GitUtils.countFiles(repository, commitID, "README.md");
             for (int i = 0; i < lines; i++) {
                 RevCommit commit = blame.getSourceCommit(i);
@@ -532,17 +544,16 @@ public class Main extends javax.swing.JFrame {
                 users.add(person.getName());
                 System.out.println("Line: " + i + ": " + commit + " - " + person.getName());
             }
+            fillListUsers(users);
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        fillListUsers(users);
+        
     }//GEN-LAST:event_btnTest2ActionPerformed
 
     private void btnTest3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTest3ActionPerformed
         Repository repository = GitUtils.getRepository(txtPath.getText());
-          
         try {
-            // find the Tree for current HEAD
             RevTree tree = GitUtils.getTree(repository);
             GitUtils.printFile(repository, tree);
             GitUtils.printDirectory(repository, tree);
@@ -550,6 +561,11 @@ public class Main extends javax.swing.JFrame {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnTest3ActionPerformed
+
+    private void btnBlameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBlameActionPerformed
+        Map<String,Integer> users = new HashMap<>();
+        GitUtils.users(users, txtPath.getText(), cobBranches.getSelectedItem().toString(), "SmartParkowanie/src/AdministrationGui/AdminGUI.java");
+    }//GEN-LAST:event_btnBlameActionPerformed
 
     /**
      * @param args the command line arguments
@@ -590,6 +606,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnBlame;
     private javax.swing.JButton btnCalculate;
     private javax.swing.JButton btnTest;
     private javax.swing.JButton btnTest2;

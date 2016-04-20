@@ -1,11 +1,14 @@
-package pl.agh.kro.gitmetric;
+package pl.agh.kro.gitmetric.git;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.api.Git;
@@ -22,12 +25,16 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jgit.api.BlameCommand;
+import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
+import org.eclipse.jgit.lib.PersonIdent;
+import pl.agh.kro.gitmetric.Main;
 
 public class GitUtils {
 
@@ -168,6 +175,37 @@ public class GitUtils {
         } else {
             // there are a few others, see FileMode javadoc for details
             throw new IllegalArgumentException("Unknown type of file encountered: " + fileMode);
+        }
+    }
+    
+    public static void users(Map<String, Integer> users, String path, String branchName, String fileName){
+        Repository repository = GitUtils.getRepository(path);
+
+        try {
+            ObjectId commitID = repository.resolve(branchName);
+
+            BlameCommand blamer = new BlameCommand(repository);
+            blamer.setStartCommit(commitID);
+            blamer.setFilePath(fileName);
+
+            BlameResult blame = blamer.call();
+
+            int lines = GitUtils.countFiles(repository, commitID, fileName);
+            for (int i = 0; i < lines; i++) {
+                PersonIdent person = blame.getSourceAuthor(i);
+                incMap(users, person.getName());
+            }
+
+        } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private static void incMap(Map<String, Integer> users, String person) {
+        if(users.containsKey(person)){
+            users.put(person,users.get(person)+1);
+        }else{
+            users.put(person,1);
         }
     }
 
