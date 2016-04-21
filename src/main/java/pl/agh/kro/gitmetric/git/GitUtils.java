@@ -86,7 +86,6 @@ public class GitUtils {
         RevWalk revWalk = new RevWalk(repository);
         RevCommit commit = revWalk.parseCommit(commitID);
         RevTree tree = commit.getTree();
-        System.out.println("Having tree: " + tree);
 
         // now try to find a specific file
         try (TreeWalk treeWalk = new TreeWalk(repository)) {
@@ -94,8 +93,11 @@ public class GitUtils {
             treeWalk.setRecursive(true);
             treeWalk.setFilter(PathFilter.create(name));
             if (!treeWalk.next()) {
-                throw new IllegalStateException("Did not find expected file "+name);
+                return 0;
+                //throw new IllegalStateException("Did not find expected file "+name);
             }
+            FileMode fileMode = treeWalk.getFileMode(0);
+            if(!fileMode.equals(FileMode.REGULAR_FILE)){return 0;}
 
             ObjectId objectId = treeWalk.getObjectId(0);
             ObjectLoader loader = repository.open(objectId);
@@ -116,12 +118,8 @@ public class GitUtils {
         // a RevWalk allows to walk over commits based on some filtering
         try (RevWalk revWalk = new RevWalk(repository)) {
             RevCommit commit = revWalk.parseCommit(lastCommitId);
-
-            System.out.println("Time of commit (seconds since epoch): " + commit.getCommitTime());
-
             // and using commit's tree find the path
             RevTree tree = commit.getTree();
-            System.out.println("Having tree: " + tree);
             return tree;
         }
     }
@@ -152,7 +150,7 @@ public class GitUtils {
         try (TreeWalk treeWalk = new TreeWalk(repository)) {
             treeWalk.addTree(tree);
             treeWalk.setRecursive(true);
-            //treeWalk.setFilter(PathFilter.create("src"));
+
             if (!treeWalk.next()) {
                 throw new IllegalStateException("Did not find expected file 'README.md'");
             }
@@ -180,20 +178,28 @@ public class GitUtils {
     
     public static void users(Map<String, Integer> users, String path, String branchName, String fileName){
         Repository repository = GitUtils.getRepository(path);
-
+        System.out.println(fileName);
         try {
             ObjectId commitID = repository.resolve(branchName);
 
-            BlameCommand blamer = new BlameCommand(repository);
-            blamer.setStartCommit(commitID);
-            blamer.setFilePath(fileName);
-
+            BlameCommand blamer = new BlameCommand(repository)
+                    .setStartCommit(commitID).setFilePath(fileName);
+            
             BlameResult blame = blamer.call();
 
             int lines = GitUtils.countFiles(repository, commitID, fileName);
+            String lastPerson = "error";
             for (int i = 0; i < lines; i++) {
-                PersonIdent person = blame.getSourceAuthor(i);
-                incMap(users, person.getName());
+                try {
+                    PersonIdent person = blame.getSourceAuthor(i);
+                    lastPerson=person.getName();
+                    incMap(users, person.getName(),1);
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    incMap(users, lastPerson,lines-i-1);
+                    System.out.println(lines +" - "+ i);
+                    break;
+                }
+                
             }
 
         } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
@@ -201,11 +207,11 @@ public class GitUtils {
         }
     }
 
-    private static void incMap(Map<String, Integer> users, String person) {
+    private static void incMap(Map<String, Integer> users, String person,Integer value) {
         if(users.containsKey(person)){
-            users.put(person,users.get(person)+1);
+            users.put(person,users.get(person)+value);
         }else{
-            users.put(person,1);
+            users.put(person,value);
         }
     }
 

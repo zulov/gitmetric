@@ -9,13 +9,13 @@ package pl.agh.kro.gitmetric;
  *
  * @author Tomek
  */
-public class ExtData {
+public class PieData {
     String name;
-    int lines;
+    int value;
 
-    public ExtData(String name, int lines) {
+    public PieData(String name, int lines) {
         this.name = name;
-        this.lines = lines;
+        this.value = lines;
     }
     
 }

@@ -407,7 +407,7 @@ public class Main extends javax.swing.JFrame {
         try {
             List<DiffEntry> entries = diffFormatter.scan(newTreeIter, oldTreeIter);
 
-            Map<String, ExtData> map = new HashMap<>();
+            Map<String, Integer> map = new HashMap<>();
             for (DiffEntry entry : entries) {
                 FileHeader fileHeader = diffFormatter.toFileHeader(entry);
                 String ext = getExt(fileHeader.getNewPath());
@@ -420,8 +420,8 @@ public class Main extends javax.swing.JFrame {
                 }
 
             }
-            paintPieChart(pnlExt, map.values(), setExt);
-            fillListExt(map);
+            paintPieChart(pnlExt, map, setExt);
+            fillList(lstExt, map.keySet());
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -439,24 +439,13 @@ public class Main extends javax.swing.JFrame {
         return diffFormatter;
     }
 
-    private void fillListExt(Map<String, ExtData> map) {
-        Iterator<ExtData> iterator = map.values().iterator();
-        lstExt.removeAll();
+    private void fillList(javax.swing.JList<String> list, Set<String> set) {
+        list.removeAll();
         DefaultListModel listModel = new DefaultListModel();
-        while (iterator.hasNext()) {
-            ExtData data = iterator.next();
-            listModel.addElement(data.name);
-        }
-        lstExt.setModel(listModel);
-    }
-    
-    private void fillListUsers(Set<String> users) {
-        lstUsers.removeAll();
-        DefaultListModel listModel = new DefaultListModel();
-        for(String user : users) {
+        for (String user : set) {
             listModel.addElement(user);
         }
-        lstUsers.setModel(listModel);
+        list.setModel(listModel);
     }
 
     private String getExt(String name) {
@@ -468,11 +457,13 @@ public class Main extends javax.swing.JFrame {
         return ext;
     }
 
-    private void addToMap(Map<String, ExtData> map, String ext, int lines) {
-        if (map.containsKey(ext)) {
-            map.get(ext).lines += lines;
+    private void addToMap(Map<String, Integer> map, String key, Integer value) {
+        if (map.containsKey(key)) {
+            Integer a = map.get(key);
+            a += value;
+            map.put(key, a);
         } else {
-            map.put(ext, new ExtData(ext, lines));
+            map.put(key, value);
         }
     }
 
@@ -544,11 +535,11 @@ public class Main extends javax.swing.JFrame {
                 users.add(person.getName());
                 System.out.println("Line: " + i + ": " + commit + " - " + person.getName());
             }
-            fillListUsers(users);
+            fillList(lstUsers, users);
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }//GEN-LAST:event_btnTest2ActionPerformed
 
     private void btnTest3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTest3ActionPerformed
@@ -563,8 +554,38 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_btnTest3ActionPerformed
 
     private void btnBlameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBlameActionPerformed
-        Map<String,Integer> users = new HashMap<>();
-        GitUtils.users(users, txtPath.getText(), cobBranches.getSelectedItem().toString(), "SmartParkowanie/src/AdministrationGui/AdminGUI.java");
+        Map<String, Integer> users = new HashMap<>();
+        Git git = GitUtils.getGit(txtPath.getText());
+        List<RevCommit> logs = GitUtils.getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
+
+        RevCommit firstCommit = logs.get(sldMinCommit.getValue());
+        RevCommit lastCommit = logs.get(sldMaxCommit.getValue());
+
+        // Obtain tree iterators to traverse the tree of the old/new commit
+        ObjectReader reader = git.getRepository().newObjectReader();
+        CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+        CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+        try {
+            oldTreeIter.reset(reader, firstCommit.getTree());
+            newTreeIter.reset(reader, lastCommit.getTree());
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        DiffFormatter diffFormatter = prepareDiffFormater(git);
+
+        List<DiffEntry> entries;
+        try {
+            entries = diffFormatter.scan(newTreeIter, oldTreeIter);
+            for (DiffEntry diffEntry : entries) {
+                GitUtils.users(users, txtPath.getText(), cobBranches.getSelectedItem().toString(), diffEntry.getNewPath());
+            }
+            fillList(lstUsers,users.keySet());
+            paintPieChart(pnlBars, users, null);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }//GEN-LAST:event_btnBlameActionPerformed
 
     /**
@@ -655,15 +676,14 @@ public class Main extends javax.swing.JFrame {
 
     }
 
-    void paintPieChart(javax.swing.JPanel panel, Collection<ExtData> datas, Set<String> setExt) {
+    void paintPieChart(javax.swing.JPanel panel, Map<String, Integer> datas, Set<String> setExt) {
         DefaultPieDataset dataset = new DefaultPieDataset();
-        Iterator<ExtData> iterator = datas.iterator();
-        while (iterator.hasNext()) {
-            ExtData data = iterator.next();
-            if (!setExt.isEmpty() && !setExt.contains(data.name)) {
+
+        for (String key : datas.keySet()) {
+            if (setExt != null && !setExt.isEmpty() && !setExt.contains(key)) {
                 continue;
             }
-            dataset.setValue(data.name + " - " + data.lines, data.lines);
+            dataset.setValue(key + " - " + datas.get(key), datas.get(key));
         }
 
         JFreeChart chart = ChartFactory.createPieChart3D(
