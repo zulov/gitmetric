@@ -255,7 +255,7 @@
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="2">
                 <StringItem index="0" value="Linie kodu"/>
-                <StringItem index="1" value="Cos innego"/>
+                <StringItem index="1" value="Bez pustych"/>
               </StringArray>
             </Property>
           </Properties>
@@ -358,10 +358,6 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnTest" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="btnTest2" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="btnTest3" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="btnBlame" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -373,8 +369,6 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="btnTest" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnTest2" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnTest3" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btnBlame" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace pref="70" max="32767" attributes="0"/>
@@ -389,22 +383,6 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnTestActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="btnTest2">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="TEST2"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnTest2ActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="btnTest3">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="W&#x142;a&#x15b;ciwo&#x15b;ci"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnTest3ActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnBlame">
@@ -453,8 +431,8 @@
         <Container class="javax.swing.JPanel" name="pnlBars">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="S&#x142;upki">
-                <Property name="tabTitle" type="java.lang.String" value="S&#x142;upki"/>
+              <JTabbedPaneConstraints tabName="Rozk&#x142;ad autorstwa">
+                <Property name="tabTitle" type="java.lang.String" value="Rozk&#x142;ad autorstwa"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>

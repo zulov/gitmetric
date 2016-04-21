@@ -8,10 +8,8 @@ package pl.agh.kro.gitmetric;
 import pl.agh.kro.gitmetric.git.GitUtils;
 import java.awt.BorderLayout;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,8 +23,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.errors.CorruptObjectException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -36,7 +32,6 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.jfree.chart.ChartFactory;
@@ -44,6 +39,8 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot3D;
 import org.jfree.data.general.DefaultPieDataset;
+import pl.agh.kro.gitmetric.marking.Marking;
+import pl.agh.kro.gitmetric.marking.MarkingFactory;
 import pl.agh.kro.gitmetric.validators.SliderValidator;
 
 /**
@@ -96,8 +93,6 @@ public class Main extends javax.swing.JFrame {
         spnMinSize = new javax.swing.JSpinner();
         pnlResult = new javax.swing.JPanel();
         btnTest = new javax.swing.JButton();
-        btnTest2 = new javax.swing.JButton();
-        btnTest3 = new javax.swing.JButton();
         btnBlame = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlExt = new javax.swing.JPanel();
@@ -146,7 +141,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        cobMetric.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Linie kodu", "Cos innego" }));
+        cobMetric.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Linie kodu", "Bez pustych" }));
 
         jLabel2.setText("Metryka:");
 
@@ -271,20 +266,6 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        btnTest2.setText("TEST2");
-        btnTest2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTest2ActionPerformed(evt);
-            }
-        });
-
-        btnTest3.setText("Właściwości");
-        btnTest3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTest3ActionPerformed(evt);
-            }
-        });
-
         btnBlame.setText("Blame");
         btnBlame.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -300,10 +281,6 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(btnTest)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnTest2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnTest3)
-                .addGap(18, 18, 18)
                 .addComponent(btnBlame)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -313,8 +290,6 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnTest)
-                    .addComponent(btnTest2)
-                    .addComponent(btnTest3)
                     .addComponent(btnBlame))
                 .addContainerGap(70, Short.MAX_VALUE))
         );
@@ -345,7 +320,7 @@ public class Main extends javax.swing.JFrame {
             .addGap(0, 422, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Słupki", pnlBars);
+        jTabbedPane1.addTab("Rozkład autorstwa", pnlBars);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -401,7 +376,7 @@ public class Main extends javax.swing.JFrame {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        DiffFormatter diffFormatter = prepareDiffFormater(git);
+        DiffFormatter diffFormatter = GitUtils.prepareDiffFormater(git);
 
         Set<String> setExt = new HashSet<>(lstExt.getSelectedValuesList());
         try {
@@ -410,18 +385,18 @@ public class Main extends javax.swing.JFrame {
             Map<String, Integer> map = new HashMap<>();
             for (DiffEntry entry : entries) {
                 FileHeader fileHeader = diffFormatter.toFileHeader(entry);
-                String ext = getExt(fileHeader.getNewPath());
+                String ext = Utils.getExt(fileHeader.getNewPath());
                 if (ext != null) {
                     for (HunkHeader hunk : fileHeader.getHunks()) {
                         if (!inValidSize(hunk)) {
-                            addToMap(map, ext, hunk.getNewLineCount());
+                            Utils.addToMap(map, ext, hunk.getNewLineCount());
                         }
                     }
                 }
 
             }
-            paintPieChart(pnlExt, map, setExt);
-            fillList(lstExt, map.keySet());
+            Utils.paintPieChart(pnlExt, map, setExt);
+            Utils.fillList(lstExt, map.keySet());
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -432,40 +407,6 @@ public class Main extends javax.swing.JFrame {
                 || hunk.getNewLineCount() <= (Integer) spnMinSize.getValue();
     }
 
-    private DiffFormatter prepareDiffFormater(Git git) {
-        DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-        diffFormatter.setRepository(git.getRepository());
-        diffFormatter.setContext(0);
-        return diffFormatter;
-    }
-
-    private void fillList(javax.swing.JList<String> list, Set<String> set) {
-        list.removeAll();
-        DefaultListModel listModel = new DefaultListModel();
-        for (String user : set) {
-            listModel.addElement(user);
-        }
-        list.setModel(listModel);
-    }
-
-    private String getExt(String name) {
-        int index = name.lastIndexOf('.');
-        if (index < 0) {
-            return null;
-        }
-        String ext = name.substring(index);
-        return ext;
-    }
-
-    private void addToMap(Map<String, Integer> map, String key, Integer value) {
-        if (map.containsKey(key)) {
-            Integer a = map.get(key);
-            a += value;
-            map.put(key, a);
-        } else {
-            map.put(key, value);
-        }
-    }
 
     private void sldMinCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMinCommitStateChanged
         if (sldMaxCommit.getValue() <= sldMinCommit.getValue()) {
@@ -506,55 +447,8 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_spnMaxSizeStateChanged
 
-    private void btnTest2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTest2ActionPerformed
-        Repository repository = GitUtils.getRepository(txtPath.getText());
-        ObjectId commitID = null;
-
-        try {
-            commitID = repository.resolve(cobBranches.getSelectedItem().toString());
-        } catch (RevisionSyntaxException | IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        BlameCommand blamer = new BlameCommand(repository);
-        blamer.setStartCommit(commitID);
-        blamer.setFilePath("README.md");
-        BlameResult blame = null;
-        try {
-            blame = blamer.call();
-        } catch (GitAPIException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        // read the number of lines from the commit to not look at changes in the working copy 
-        try {
-            Set<String> users = new HashSet<>();
-            int lines = GitUtils.countFiles(repository, commitID, "README.md");
-            for (int i = 0; i < lines; i++) {
-                RevCommit commit = blame.getSourceCommit(i);
-                PersonIdent person = blame.getSourceAuthor(i);
-                users.add(person.getName());
-                System.out.println("Line: " + i + ": " + commit + " - " + person.getName());
-            }
-            fillList(lstUsers, users);
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }//GEN-LAST:event_btnTest2ActionPerformed
-
-    private void btnTest3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTest3ActionPerformed
-        Repository repository = GitUtils.getRepository(txtPath.getText());
-        try {
-            RevTree tree = GitUtils.getTree(repository);
-            GitUtils.printFile(repository, tree);
-            GitUtils.printDirectory(repository, tree);
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_btnTest3ActionPerformed
-
     private void btnBlameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBlameActionPerformed
-        Map<String, Integer> users = new HashMap<>();
+        Marking marking = MarkingFactory.getMarking(cobMetric.getSelectedItem().toString());
         Git git = GitUtils.getGit(txtPath.getText());
         List<RevCommit> logs = GitUtils.getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
 
@@ -572,16 +466,16 @@ public class Main extends javax.swing.JFrame {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        DiffFormatter diffFormatter = prepareDiffFormater(git);
+        DiffFormatter diffFormatter = GitUtils.prepareDiffFormater(git);
 
         List<DiffEntry> entries;
         try {
             entries = diffFormatter.scan(newTreeIter, oldTreeIter);
             for (DiffEntry diffEntry : entries) {
-                GitUtils.users(users, txtPath.getText(), cobBranches.getSelectedItem().toString(), diffEntry.getNewPath());
+                GitUtils.users(marking, txtPath.getText(), cobBranches.getSelectedItem().toString(), diffEntry.getNewPath());
             }
-            fillList(lstUsers,users.keySet());
-            paintPieChart(pnlBars, users, null);
+            Utils.fillList(lstUsers,marking.getNames());
+            Utils.paintPieChart(pnlBars, marking.getUsers(), null);
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -630,8 +524,6 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton btnBlame;
     private javax.swing.JButton btnCalculate;
     private javax.swing.JButton btnTest;
-    private javax.swing.JButton btnTest2;
-    private javax.swing.JButton btnTest3;
     private javax.swing.JComboBox<String> cobBranches;
     private javax.swing.JComboBox<String> cobMetric;
     private javax.swing.JLabel jLabel1;
@@ -674,40 +566,6 @@ public class Main extends javax.swing.JFrame {
             cobBranches.addItem(ref.getName());
         }
 
-    }
-
-    void paintPieChart(javax.swing.JPanel panel, Map<String, Integer> datas, Set<String> setExt) {
-        DefaultPieDataset dataset = new DefaultPieDataset();
-
-        for (String key : datas.keySet()) {
-            if (setExt != null && !setExt.isEmpty() && !setExt.contains(key)) {
-                continue;
-            }
-            dataset.setValue(key + " - " + datas.get(key), datas.get(key));
-        }
-
-        JFreeChart chart = ChartFactory.createPieChart3D(
-                "Rozkład rozszerzeń", // chart title                   
-                dataset, // data 
-                true, // include legend                   
-                true,
-                false);
-
-        final PiePlot3D plot = (PiePlot3D) chart.getPlot();
-        plot.setStartAngle(0);
-        plot.setForegroundAlpha(0.75f);
-        plot.setInteriorGap(0.05);
-
-//        for (int i = 0; i < datas.size(); i++) {
-//            plot.setSectionPaint(datas.get(i).name, partie[i].color);
-//        }
-        ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(panel.getSize()));
-        chartPanel.setVisible(true);
-        panel.setLayout(new java.awt.BorderLayout());
-        panel.removeAll();
-        panel.add(chartPanel, BorderLayout.CENTER);
-        panel.validate();
     }
 
 }

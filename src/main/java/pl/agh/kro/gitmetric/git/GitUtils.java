@@ -5,10 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.api.Git;
@@ -27,14 +24,12 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.errors.AmbiguousObjectException;
-import org.eclipse.jgit.errors.CorruptObjectException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
 import pl.agh.kro.gitmetric.Main;
+import pl.agh.kro.gitmetric.marking.Marking;
 
 public class GitUtils {
 
@@ -83,10 +78,7 @@ public class GitUtils {
     }
     
     public static int countFiles(Repository repository, ObjectId commitID, String name) throws IOException {
-        RevWalk revWalk = new RevWalk(repository);
-        RevCommit commit = revWalk.parseCommit(commitID);
-        RevTree tree = commit.getTree();
-
+        RevTree tree = getRevTree(repository, commitID);
         // now try to find a specific file
         try (TreeWalk treeWalk = new TreeWalk(repository)) {
             treeWalk.addTree(tree);
@@ -105,78 +97,18 @@ public class GitUtils {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             loader.copyTo(stream);
 
-            revWalk.dispose();
-
             return IOUtils.readLines(new ByteArrayInputStream(stream.toByteArray())).size();
         } 
     }
-    
-    public static RevTree getTree(Repository repository) throws AmbiguousObjectException, IncorrectObjectTypeException,
-            IOException, MissingObjectException {
-        ObjectId lastCommitId = repository.resolve(Constants.HEAD);
 
-        // a RevWalk allows to walk over commits based on some filtering
-        try (RevWalk revWalk = new RevWalk(repository)) {
-            RevCommit commit = revWalk.parseCommit(lastCommitId);
-            // and using commit's tree find the path
-            RevTree tree = commit.getTree();
-            return tree;
-        }
-    }
-
-    public static void printFile(Repository repository, RevTree tree) throws MissingObjectException,
-            IncorrectObjectTypeException, CorruptObjectException, IOException {
-        // now try to find a specific file
-        try (TreeWalk treeWalk = new TreeWalk(repository)) {
-            treeWalk.addTree(tree);
-            treeWalk.setRecursive(false);
-            treeWalk.setFilter(PathFilter.create("README.md"));
-            if (!treeWalk.next()) {
-                throw new IllegalStateException("Did not find expected file 'README.md'");
-            }
-
-        // FileMode specifies the type of file, FileMode.REGULAR_FILE for normal file, FileMode.EXECUTABLE_FILE for executable bit
-    // set
-            FileMode fileMode = treeWalk.getFileMode(0);
-            ObjectLoader loader = repository.open(treeWalk.getObjectId(0));
-            System.out.println("README.md: " + getFileMode(fileMode) + ", type: " + fileMode.getObjectType() + ", mode: " + fileMode +
-                    " size: " + loader.getSize());
-        }
-    }
-
-    public static void printDirectory(Repository repository, RevTree tree) throws MissingObjectException,
-            IncorrectObjectTypeException, CorruptObjectException, IOException {
-        // look at directory, this has FileMode.TREE
-        try (TreeWalk treeWalk = new TreeWalk(repository)) {
-            treeWalk.addTree(tree);
-            treeWalk.setRecursive(true);
-
-            if (!treeWalk.next()) {
-                throw new IllegalStateException("Did not find expected file 'README.md'");
-            }
-
-            // FileMode now indicates that this is a directory, i.e. FileMode.TREE.equals(fileMode) holds true
-            FileMode fileMode = treeWalk.getFileMode(0);
-            System.out.println("src: " + getFileMode(fileMode) + ", type: " + fileMode.getObjectType() + ", mode: " + fileMode);
-        }
-    }
-
-    public static String getFileMode(FileMode fileMode) {
-        if (fileMode.equals(FileMode.EXECUTABLE_FILE)) {
-            return "Executable File";
-        } else if (fileMode.equals(FileMode.REGULAR_FILE)) {
-            return "Normal File";
-        } else if (fileMode.equals(FileMode.TREE)) {
-            return "Directory";
-        } else if (fileMode.equals(FileMode.SYMLINK)) {
-            return "Symlink";
-        } else {
-            // there are a few others, see FileMode javadoc for details
-            throw new IllegalArgumentException("Unknown type of file encountered: " + fileMode);
-        }
+    private static RevTree getRevTree(Repository repository, ObjectId commitID) throws IOException {
+        RevWalk revWalk = new RevWalk(repository);
+        RevTree tree = revWalk.parseCommit(commitID).getTree();
+        revWalk.dispose();
+        return tree;
     }
     
-    public static void users(Map<String, Integer> users, String path, String branchName, String fileName){
+    public static void users(Marking marking, String path, String branchName, String fileName){
         Repository repository = GitUtils.getRepository(path);
         System.out.println(fileName);
         try {
@@ -193,26 +125,23 @@ public class GitUtils {
                 try {
                     PersonIdent person = blame.getSourceAuthor(i);
                     lastPerson=person.getName();
-                    incMap(users, person.getName(),1);
+                    marking.incMap(person.getName(),1,blame.getResultContents().getString(i));
                 } catch (ArrayIndexOutOfBoundsException ex) {
-                    incMap(users, lastPerson,lines-i-1);
-                    System.out.println(lines +" - "+ i);
+                    marking.incMap(lastPerson,lines-i-1,"");
                     break;
                 }
-                
             }
 
         } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    private static void incMap(Map<String, Integer> users, String person,Integer value) {
-        if(users.containsKey(person)){
-            users.put(person,users.get(person)+value);
-        }else{
-            users.put(person,value);
-        }
+    
+    public static DiffFormatter prepareDiffFormater(Git git) {
+        DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+        diffFormatter.setRepository(git.getRepository());
+        diffFormatter.setContext(0);
+        return diffFormatter;
     }
 
 }
