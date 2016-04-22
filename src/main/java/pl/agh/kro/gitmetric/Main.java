@@ -6,41 +6,15 @@
 package pl.agh.kro.gitmetric;
 
 import pl.agh.kro.gitmetric.git.GitUtils;
-import java.awt.BorderLayout;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultListModel;
-import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand.ListMode;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.errors.RevisionSyntaxException;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectReader;
-import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.patch.FileHeader;
-import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.treewalk.CanonicalTreeParser;
-import org.eclipse.jgit.util.io.DisabledOutputStream;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PiePlot3D;
-import org.jfree.data.general.DefaultPieDataset;
-import pl.agh.kro.gitmetric.marking.Marking;
-import pl.agh.kro.gitmetric.marking.MarkingFactory;
 import pl.agh.kro.gitmetric.validators.SliderValidator;
 
 /**
@@ -78,7 +52,7 @@ public class Main extends javax.swing.JFrame {
         lstUsers = new javax.swing.JList<>();
         lblMinCommit = new javax.swing.JLabel();
         lblMaxCommit = new javax.swing.JLabel();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        prbCompute = new javax.swing.JProgressBar();
         sldMinCommit = new javax.swing.JSlider();
         sldMaxCommit = new javax.swing.JSlider();
         cobMetric = new javax.swing.JComboBox<>();
@@ -91,12 +65,13 @@ public class Main extends javax.swing.JFrame {
         lblMinSize = new javax.swing.JLabel();
         spnMaxSize = new javax.swing.JSpinner();
         spnMinSize = new javax.swing.JSpinner();
-        pnlResult = new javax.swing.JPanel();
-        btnTest = new javax.swing.JButton();
-        btnBlame = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        lblTime = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlExt = new javax.swing.JPanel();
-        pnlBars = new javax.swing.JPanel();
+        pnlAuthors = new javax.swing.JPanel();
+        lblFiles = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -114,11 +89,8 @@ public class Main extends javax.swing.JFrame {
         });
 
         lstUsers.setBorder(javax.swing.BorderFactory.createTitledBorder("Użytkownicy"));
-        lstUsers.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
+        lstUsers.setToolTipText("");
+        lstUsers.setLayoutOrientation(javax.swing.JList.HORIZONTAL_WRAP);
         jScrollPane1.setViewportView(lstUsers);
 
         lblMinCommit.setText("Od:");
@@ -174,6 +146,13 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        jLabel4.setText("Wielkość pliku:");
+
+        jLabel5.setText("Czas obliczeń:");
+
+        lblTime.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblTime.setText("0000.00s");
+
         javax.swing.GroupLayout pnlSettingLayout = new javax.swing.GroupLayout(pnlSetting);
         pnlSetting.setLayout(pnlSettingLayout);
         pnlSettingLayout.setHorizontalGroup(
@@ -181,40 +160,49 @@ public class Main extends javax.swing.JFrame {
             .addGroup(pnlSettingLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtPath, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                    .addComponent(txtPath)
                     .addComponent(btnCalculate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(prbCompute, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(pnlSettingLayout.createSequentialGroup()
                         .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cobBranches, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(cobMetric, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(jScrollPane2)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlSettingLayout.createSequentialGroup()
-                        .addComponent(lblMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(sldMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(lblMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(lblMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spnMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                        .addComponent(lblMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spnMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(lblMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(spnMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(lblMinCommit, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
+                            .addComponent(lblMaxCommit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .addComponent(sldMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel4))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(lblMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(spnMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(lblTime, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
+
+        pnlSettingLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {spnMaxSize, spnMinSize});
+
         pnlSettingLayout.setVerticalGroup(
             pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlSettingLayout.createSequentialGroup()
@@ -238,60 +226,27 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(cobBranches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(3, 3, 3)
+                .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblMinSize)
-                    .addComponent(spnMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spnMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblMaxSize)
                     .addComponent(spnMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnCalculate)
-                .addContainerGap())
-        );
-
-        pnlResult.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Wyniki"));
-
-        btnTest.setText("Rozkład");
-        btnTest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTestActionPerformed(evt);
-            }
-        });
-
-        btnBlame.setText("Blame");
-        btnBlame.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBlameActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout pnlResultLayout = new javax.swing.GroupLayout(pnlResult);
-        pnlResult.setLayout(pnlResultLayout);
-        pnlResultLayout.setHorizontalGroup(
-            pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlResultLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btnTest)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnBlame)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        pnlResultLayout.setVerticalGroup(
-            pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlResultLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnTest)
-                    .addComponent(btnBlame))
-                .addContainerGap(70, Short.MAX_VALUE))
+                .addComponent(btnCalculate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(prbCompute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(lblTime))
+                .addGap(6, 6, 6))
         );
 
         pnlExt.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -300,27 +255,32 @@ public class Main extends javax.swing.JFrame {
         pnlExt.setLayout(pnlExtLayout);
         pnlExtLayout.setHorizontalGroup(
             pnlExtLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 780, Short.MAX_VALUE)
+            .addGap(0, 721, Short.MAX_VALUE)
         );
         pnlExtLayout.setVerticalGroup(
             pnlExtLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 418, Short.MAX_VALUE)
+            .addGap(0, 529, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Rozszerzenia", pnlExt);
 
-        javax.swing.GroupLayout pnlBarsLayout = new javax.swing.GroupLayout(pnlBars);
-        pnlBars.setLayout(pnlBarsLayout);
-        pnlBarsLayout.setHorizontalGroup(
-            pnlBarsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 784, Short.MAX_VALUE)
+        javax.swing.GroupLayout pnlAuthorsLayout = new javax.swing.GroupLayout(pnlAuthors);
+        pnlAuthors.setLayout(pnlAuthorsLayout);
+        pnlAuthorsLayout.setHorizontalGroup(
+            pnlAuthorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 725, Short.MAX_VALUE)
         );
-        pnlBarsLayout.setVerticalGroup(
-            pnlBarsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 422, Short.MAX_VALUE)
+        pnlAuthorsLayout.setVerticalGroup(
+            pnlAuthorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 533, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Rozkład autorstwa", pnlBars);
+        jTabbedPane1.addTab("Rozkład autorstwa", pnlAuthors);
+
+        lblFiles.setText("-");
+        lblFiles.setToolTipText("");
+        lblFiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        lblFiles.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -328,25 +288,23 @@ public class Main extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pnlSetting, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pnlSetting, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlResult, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jTabbedPane1))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jTabbedPane1)
+                    .addComponent(lblFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pnlSetting, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(jTabbedPane1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pnlResult, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(pnlSetting, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 561, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(lblFiles, javax.swing.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -354,59 +312,18 @@ public class Main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
-
+        ComputeThread computeThread = new ComputeThread();
+        computeThread.setCommits(sldMinCommit.getValue(), sldMaxCommit.getValue());
+        computeThread.setLabels(lblFiles, lblTime);
+        computeThread.setLists(lstExt, lstUsers);
+        computeThread.setPanels(pnlAuthors, pnlExt);
+        computeThread.setReposData(txtPath.getText(), cobBranches.getSelectedItem().toString());
+        computeThread.setSetExt(lstExt.getSelectedValuesList());
+        computeThread.setPrbCompute(prbCompute);
+        computeThread.setMetric(cobMetric.getSelectedItem().toString());
+        computeThread.setSizes((Integer)spnMaxSize.getValue(),(Integer) spnMinSize.getValue());
+        computeThread.start();
     }//GEN-LAST:event_btnCalculateActionPerformed
-
-
-    private void btnTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTestActionPerformed
-        Git git = GitUtils.getGit(txtPath.getText());
-        List<RevCommit> logs = GitUtils.getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
-
-        RevCommit firstCommit = logs.get(sldMinCommit.getValue());
-        RevCommit lastCommit = logs.get(sldMaxCommit.getValue());
-
-        // Obtain tree iterators to traverse the tree of the old/new commit
-        ObjectReader reader = git.getRepository().newObjectReader();
-        CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
-        CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
-        try {
-            oldTreeIter.reset(reader, firstCommit.getTree());
-            newTreeIter.reset(reader, lastCommit.getTree());
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        DiffFormatter diffFormatter = GitUtils.prepareDiffFormater(git);
-
-        Set<String> setExt = new HashSet<>(lstExt.getSelectedValuesList());
-        try {
-            List<DiffEntry> entries = diffFormatter.scan(newTreeIter, oldTreeIter);
-
-            Map<String, Integer> map = new HashMap<>();
-            for (DiffEntry entry : entries) {
-                FileHeader fileHeader = diffFormatter.toFileHeader(entry);
-                String ext = Utils.getExt(fileHeader.getNewPath());
-                if (ext != null) {
-                    for (HunkHeader hunk : fileHeader.getHunks()) {
-                        if (!inValidSize(hunk)) {
-                            Utils.addToMap(map, ext, hunk.getNewLineCount());
-                        }
-                    }
-                }
-
-            }
-            Utils.paintPieChart(pnlExt, map, setExt);
-            Utils.fillList(lstExt, map.keySet());
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_btnTestActionPerformed
-
-    private boolean inValidSize(HunkHeader hunk) {
-        return hunk.getNewLineCount() >= (Integer) spnMaxSize.getValue()
-                || hunk.getNewLineCount() <= (Integer) spnMinSize.getValue();
-    }
-
 
     private void sldMinCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMinCommitStateChanged
         if (sldMaxCommit.getValue() <= sldMinCommit.getValue()) {
@@ -447,41 +364,6 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_spnMaxSizeStateChanged
 
-    private void btnBlameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBlameActionPerformed
-        Marking marking = MarkingFactory.getMarking(cobMetric.getSelectedItem().toString());
-        Git git = GitUtils.getGit(txtPath.getText());
-        List<RevCommit> logs = GitUtils.getLogs(txtPath.getText(), cobBranches.getSelectedItem().toString());
-
-        RevCommit firstCommit = logs.get(sldMinCommit.getValue());
-        RevCommit lastCommit = logs.get(sldMaxCommit.getValue());
-
-        // Obtain tree iterators to traverse the tree of the old/new commit
-        ObjectReader reader = git.getRepository().newObjectReader();
-        CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
-        CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
-        try {
-            oldTreeIter.reset(reader, firstCommit.getTree());
-            newTreeIter.reset(reader, lastCommit.getTree());
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        DiffFormatter diffFormatter = GitUtils.prepareDiffFormater(git);
-
-        List<DiffEntry> entries;
-        try {
-            entries = diffFormatter.scan(newTreeIter, oldTreeIter);
-            for (DiffEntry diffEntry : entries) {
-                GitUtils.users(marking, txtPath.getText(), cobBranches.getSelectedItem().toString(), diffEntry.getNewPath());
-            }
-            Utils.fillList(lstUsers,marking.getNames());
-            Utils.paintPieChart(pnlBars, marking.getUsers(), null);
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }//GEN-LAST:event_btnBlameActionPerformed
-
     /**
      * @param args the command line arguments
      */
@@ -521,28 +403,29 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnBlame;
     private javax.swing.JButton btnCalculate;
-    private javax.swing.JButton btnTest;
     private javax.swing.JComboBox<String> cobBranches;
     private javax.swing.JComboBox<String> cobMetric;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JLabel lblFiles;
     private javax.swing.JLabel lblMaxCommit;
     private javax.swing.JLabel lblMaxSize;
     private javax.swing.JLabel lblMinCommit;
     private javax.swing.JLabel lblMinSize;
+    private javax.swing.JLabel lblTime;
     private javax.swing.JList<String> lstExt;
     private javax.swing.JList<String> lstUsers;
-    private javax.swing.JPanel pnlBars;
+    private javax.swing.JPanel pnlAuthors;
     private javax.swing.JPanel pnlExt;
-    private javax.swing.JPanel pnlResult;
     private javax.swing.JPanel pnlSetting;
+    private javax.swing.JProgressBar prbCompute;
     private javax.swing.JSlider sldMaxCommit;
     private javax.swing.JSlider sldMinCommit;
     private javax.swing.JSpinner spnMaxSize;

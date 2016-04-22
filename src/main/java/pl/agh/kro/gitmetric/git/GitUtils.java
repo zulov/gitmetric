@@ -108,7 +108,7 @@ public class GitUtils {
         return tree;
     }
     
-    public static void users(Marking marking, String path, String branchName, String fileName){
+    public static void authorsOfFile(Marking marking, String path, String branchName, String fileName){
         Repository repository = GitUtils.getRepository(path);
         System.out.println(fileName);
         try {
