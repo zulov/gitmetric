@@ -79,15 +79,9 @@ public class ComputeThread extends Thread  {
             prbCompute.setMaximum(entries.size());
             Map<String, Integer> extsMap = new HashMap<>();
             for (DiffEntry entry : entries) {
-                int value = prbCompute.getValue();
-                prbCompute.setValue(value+1);
-                lblFiles.setText(entry.getNewPath());
-                              
+                updateInterface(entry, startTime);              
                 FileHeader fileHeader = diffFormatter.toFileHeader(entry);
-                String ext = Utils.getExt(fileHeader.getNewPath());
-                if (ext == null) {
-                    ext = "none";
-                }
+                String ext = getExtension(fileHeader.getNewPath());
                 GitUtils.authorsOfFile(marking, path, branch, entry.getNewPath());
                 for (HunkHeader hunk : fileHeader.getHunks()) {
                     if (!isValidSize(hunk)) {
@@ -104,6 +98,21 @@ public class ComputeThread extends Thread  {
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+        lblTime.setText((System.currentTimeMillis()-startTime)/1000f+"s");
+    }
+
+    private String getExtension(String name) {
+        String ext = Utils.getExt(name);
+        if (ext == null) {
+            ext = "none";
+        }
+        return ext;
+    }
+
+    private void updateInterface(DiffEntry entry, long startTime) {
+        int value = prbCompute.getValue();
+        prbCompute.setValue(value+1);
+        lblFiles.setText(entry.getNewPath());
         lblTime.setText((System.currentTimeMillis()-startTime)/1000f+"s");
     }
     
