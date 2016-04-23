@@ -76,6 +76,10 @@ public class GitUtils {
         Git git = new Git(repository);
         return git;
     }
+    public static Git getGit(Repository repository){
+        Git git = new Git(repository);
+        return git;
+    }
     
     public static int countFiles(Repository repository, ObjectId commitID, String name) throws IOException {
         RevTree tree = getRevTree(repository, commitID);
@@ -107,8 +111,7 @@ public class GitUtils {
         return tree;
     }
     
-    public static void authorsOfFile(Marking marking, String path, String branchName, String fileName,int lines){
-        Repository repository = GitUtils.getRepository(path);
+    public static void authorsOfFile(Marking marking, Repository repository, String branchName, String fileName,int lines){
         System.out.println(fileName);
         try {
             ObjectId commitID = repository.resolve(branchName);
@@ -143,9 +146,7 @@ public class GitUtils {
         return diffFormatter;
     }
 
-    public static int linesNumber(String path, String branch, String newPath) {
-        Repository repository = GitUtils.getRepository(path);
-
+    public static int linesNumber(Repository repository, String branch, String newPath) {
         try {
             ObjectId commitID = repository.resolve(branch);
             int lines = GitUtils.countFiles(repository, commitID, newPath);

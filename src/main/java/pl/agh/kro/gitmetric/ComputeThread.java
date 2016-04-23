@@ -16,6 +16,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -57,8 +58,11 @@ public class ComputeThread extends Thread {
         long startTime = System.currentTimeMillis();
         prbCompute.setValue(0);
         Marking marking = MarkingFactory.getMarking(metric);
+        Repository repository = GitUtils.getRepository(path);
+        Map<String, Integer> extsMap = new HashMap<>();
+        Map<String, Integer> fileTypeMap = new HashMap<>();
 
-        Git git = GitUtils.getGit(path);
+        Git git = GitUtils.getGit(repository);
         List<RevCommit> logs = GitUtils.getLogs(path, branch);
 
         RevCommit oldestCommit = logs.get(minCommit);
@@ -77,24 +81,24 @@ public class ComputeThread extends Thread {
 
         DiffFormatter diffFormatter = GitUtils.prepareDiffFormater(git);
 
-        //Set<String> setExt = new HashSet<>(lstExt.getSelectedValuesList());
         try {
             List<DiffEntry> entries = diffFormatter.scan(newTreeIter, oldTreeIter);
             prbCompute.setMaximum(entries.size());
-            Map<String, Integer> extsMap = new HashMap<>();
-            Map<String, Integer> fileTypeMap = new HashMap<>();
+
             for (DiffEntry entry : entries) {
                 updateInterface(entry, startTime);
 
                 FileHeader fileHeader = diffFormatter.toFileHeader(entry);
-                String ext = getExtension(fileHeader.getNewPath());
-                int lines = GitUtils.linesNumber(path, branch, entry.getNewPath());
-                if (isValid(fileHeader.getPatchType().toString(), ext, lines)) {
-
-                    GitUtils.authorsOfFile(marking, path, branch, entry.getNewPath(), lines);
+                String extension = getExtension(fileHeader.getNewPath());
+                makeSureMapsAreFilled(extsMap, extension, fileTypeMap, fileHeader);
+                
+                int lines = GitUtils.linesNumber(repository, branch, entry.getNewPath());
+                
+                if (isValid(fileHeader.getPatchType().toString(), extension, lines)) {
+                    GitUtils.authorsOfFile(marking, repository, branch, entry.getNewPath(), lines);
                     Utils.addToMap(fileTypeMap, fileHeader.getPatchType().toString(), lines);
                     for (HunkHeader hunk : fileHeader.getHunks()) {
-                        Utils.addToMap(extsMap, ext, hunk.getNewLineCount());
+                        Utils.addToMap(extsMap, extension, hunk.getNewLineCount());
                     }
                 }
             }
@@ -113,6 +117,16 @@ public class ComputeThread extends Thread {
         lblTime.setText((System.currentTimeMillis() - startTime) / 1000f + "s");
     }
 
+    private void makeSureMapsAreFilled(Map<String, Integer> extsMap, String extension, Map<String, Integer> fileTypeMap, FileHeader fileHeader) {
+        if(!extsMap.containsKey(extension)){
+            extsMap.put(extension,0);
+        }
+        
+        if(!fileTypeMap.containsKey(fileHeader.getPatchType().toString())){
+            fileTypeMap.put(fileHeader.getPatchType().toString(),0);
+        }
+    }
+
     private String getExtension(String name) {
         String ext = Utils.getExt(name);
         if (ext == null) {
@@ -126,10 +140,6 @@ public class ComputeThread extends Thread {
         prbCompute.setValue(value + 1);
         lblFiles.setText(entry.getNewPath());
         lblTime.setText((System.currentTimeMillis() - startTime) / 1000f + "s");
-    }
-
-    private boolean isValidSize(HunkHeader hunk) {
-        return hunk.getNewLineCount() >= maxSize || hunk.getNewLineCount() <= minSize;
     }
 
     public void setMetric(String metric) {
