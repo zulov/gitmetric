@@ -5,11 +5,13 @@
  */
 package pl.agh.kro.gitmetric;
 
+import java.io.File;
 import pl.agh.kro.gitmetric.git.GitUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand.ListMode;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -49,18 +51,18 @@ public class Main extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         btnCalculate = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        lstUsers = new javax.swing.JList<>();
+        lstUsers = new javax.swing.JList<String>();
         lblMinCommit = new javax.swing.JLabel();
         lblMaxCommit = new javax.swing.JLabel();
         prbCompute = new javax.swing.JProgressBar();
         sldMinCommit = new javax.swing.JSlider();
         sldMaxCommit = new javax.swing.JSlider();
-        cobMetric = new javax.swing.JComboBox<>();
+        cobMetric = new javax.swing.JComboBox<String>();
         jLabel2 = new javax.swing.JLabel();
-        cobBranches = new javax.swing.JComboBox<>();
+        cobBranches = new javax.swing.JComboBox<String>();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        lstExt = new javax.swing.JList<>();
+        lstExt = new javax.swing.JList<String>();
         lblMaxSize = new javax.swing.JLabel();
         lblMinSize = new javax.swing.JLabel();
         spnMaxSize = new javax.swing.JSpinner();
@@ -69,7 +71,8 @@ public class Main extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         lblTime = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        lstFileType = new javax.swing.JList<>();
+        lstFileType = new javax.swing.JList<String>();
+        btnBrowse = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlExt = new javax.swing.JPanel();
         pnlAuthors = new javax.swing.JPanel();
@@ -116,7 +119,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        cobMetric.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Linie kodu", "Bez pustych" }));
+        cobMetric.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Linie kodu", "Bez pustych" }));
 
         jLabel2.setText("Metryka:");
 
@@ -162,6 +165,13 @@ public class Main extends javax.swing.JFrame {
         jScrollPane3.setViewportView(lstFileType);
         lstFileType.getAccessibleContext().setAccessibleName("fileType");
 
+        btnBrowse.setText("Browse");
+        btnBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBrowseActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlSettingLayout = new javax.swing.GroupLayout(pnlSetting);
         pnlSetting.setLayout(pnlSettingLayout);
         pnlSettingLayout.setHorizontalGroup(
@@ -197,9 +207,7 @@ public class Main extends javax.swing.JFrame {
                             .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                             .addComponent(sldMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel4))
+                        .addComponent(jLabel4)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
                         .addComponent(jLabel5)
@@ -207,7 +215,11 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(lblTime, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane2)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(pnlSettingLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnBrowse)))
                 .addContainerGap())
         );
 
@@ -216,10 +228,13 @@ public class Main extends javax.swing.JFrame {
         pnlSettingLayout.setVerticalGroup(
             pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlSettingLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBrowse))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lblMinCommit))
@@ -389,6 +404,28 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_spnMaxSizeStateChanged
 
+    private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+//            System.out.println("getCurrentDirectory(): "
+//                    + fileChooser.getCurrentDirectory());
+            System.out.println("getSelectedFile() : "
+                    + fileChooser.getSelectedFile());
+            txtPath.setText(fileChooser.getSelectedFile().toString());
+            try {
+                initMyComponents();
+            } catch (GitAPIException | IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("No Selection ");
+        }
+    }//GEN-LAST:event_btnBrowseActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -428,6 +465,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnBrowse;
     private javax.swing.JButton btnCalculate;
     private javax.swing.JComboBox<String> cobBranches;
     private javax.swing.JComboBox<String> cobMetric;
