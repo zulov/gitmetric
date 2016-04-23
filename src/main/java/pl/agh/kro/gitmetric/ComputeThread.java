@@ -82,11 +82,10 @@ public class ComputeThread extends Thread  {
                 int value = prbCompute.getValue();
                 prbCompute.setValue(value+1);
                 lblFiles.setText(entry.getNewPath());
-                
-                
+                              
                 FileHeader fileHeader = diffFormatter.toFileHeader(entry);
                 String ext = Utils.getExt(fileHeader.getNewPath());
-                if (ext != null) {
+                if (ext == null) {
                     ext = "none";
                 }
                 GitUtils.authorsOfFile(marking, path, branch, entry.getNewPath());
