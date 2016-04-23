@@ -79,14 +79,13 @@ public class GitUtils {
     
     public static int countFiles(Repository repository, ObjectId commitID, String name) throws IOException {
         RevTree tree = getRevTree(repository, commitID);
-        // now try to find a specific file
+
         try (TreeWalk treeWalk = new TreeWalk(repository)) {
             treeWalk.addTree(tree);
             treeWalk.setRecursive(true);
             treeWalk.setFilter(PathFilter.create(name));
             if (!treeWalk.next()) {
                 return 0;
-                //throw new IllegalStateException("Did not find expected file "+name);
             }
             FileMode fileMode = treeWalk.getFileMode(0);
             if(!fileMode.equals(FileMode.REGULAR_FILE)){return 0;}
@@ -108,7 +107,7 @@ public class GitUtils {
         return tree;
     }
     
-    public static void authorsOfFile(Marking marking, String path, String branchName, String fileName){
+    public static void authorsOfFile(Marking marking, String path, String branchName, String fileName,int lines){
         Repository repository = GitUtils.getRepository(path);
         System.out.println(fileName);
         try {
@@ -119,7 +118,6 @@ public class GitUtils {
             
             BlameResult blame = blamer.call();
 
-            int lines = GitUtils.countFiles(repository, commitID, fileName);
             String lastPerson = "error";
             for (int i = 0; i < lines; i++) {
                 try {
@@ -135,6 +133,7 @@ public class GitUtils {
         } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
     
     public static DiffFormatter prepareDiffFormater(Git git) {
@@ -142,6 +141,20 @@ public class GitUtils {
         diffFormatter.setRepository(git.getRepository());
         diffFormatter.setContext(0);
         return diffFormatter;
+    }
+
+    public static int linesNumber(String path, String branch, String newPath) {
+        Repository repository = GitUtils.getRepository(path);
+
+        try {
+            ObjectId commitID = repository.resolve(branch);
+            int lines = GitUtils.countFiles(repository, commitID, newPath);
+
+            return lines;
+        } catch (RevisionSyntaxException | IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
     }
 
 }

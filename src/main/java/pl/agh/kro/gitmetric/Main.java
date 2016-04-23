@@ -68,9 +68,12 @@ public class Main extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         lblTime = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        lstFileType = new javax.swing.JList<>();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlExt = new javax.swing.JPanel();
         pnlAuthors = new javax.swing.JPanel();
+        pnlFileType = new javax.swing.JPanel();
         lblFiles = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -153,6 +156,12 @@ public class Main extends javax.swing.JFrame {
         lblTime.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblTime.setText("0000.00s");
 
+        lstFileType.setBorder(javax.swing.BorderFactory.createTitledBorder("Typy plików"));
+        lstFileType.setToolTipText("");
+        lstFileType.setLayoutOrientation(javax.swing.JList.HORIZONTAL_WRAP);
+        jScrollPane3.setViewportView(lstFileType);
+        lstFileType.getAccessibleContext().setAccessibleName("fileType");
+
         javax.swing.GroupLayout pnlSettingLayout = new javax.swing.GroupLayout(pnlSetting);
         pnlSetting.setLayout(pnlSettingLayout);
         pnlSettingLayout.setHorizontalGroup(
@@ -162,7 +171,6 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtPath)
                     .addComponent(btnCalculate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1)
                     .addComponent(prbCompute, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(pnlSettingLayout.createSequentialGroup()
                         .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -172,7 +180,6 @@ public class Main extends javax.swing.JFrame {
                         .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cobBranches, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(cobMetric, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(jScrollPane2)
                     .addGroup(pnlSettingLayout.createSequentialGroup()
                         .addComponent(lblMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -197,7 +204,10 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(pnlSettingLayout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(lblTime, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(lblTime, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane2)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
 
@@ -234,11 +244,13 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(spnMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblMaxSize)
                     .addComponent(spnMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(32, 32, 32)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(11, 11, 11)
                 .addComponent(btnCalculate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(prbCompute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -277,6 +289,19 @@ public class Main extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Rozkład autorstwa", pnlAuthors);
 
+        javax.swing.GroupLayout pnlFileTypeLayout = new javax.swing.GroupLayout(pnlFileType);
+        pnlFileType.setLayout(pnlFileTypeLayout);
+        pnlFileTypeLayout.setHorizontalGroup(
+            pnlFileTypeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 725, Short.MAX_VALUE)
+        );
+        pnlFileTypeLayout.setVerticalGroup(
+            pnlFileTypeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 533, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Typy plików", pnlFileType);
+
         lblFiles.setText("-");
         lblFiles.setToolTipText("");
         lblFiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -304,7 +329,7 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 561, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(lblFiles, javax.swing.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE)))
+                        .addComponent(lblFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -315,13 +340,13 @@ public class Main extends javax.swing.JFrame {
         ComputeThread computeThread = new ComputeThread();
         computeThread.setCommits(sldMinCommit.getValue(), sldMaxCommit.getValue());
         computeThread.setLabels(lblFiles, lblTime);
-        computeThread.setLists(lstExt, lstUsers);
-        computeThread.setPanels(pnlAuthors, pnlExt);
+        computeThread.setLists(lstExt, lstUsers, lstFileType);
+        computeThread.setPanels(pnlAuthors, pnlExt, pnlFileType);
         computeThread.setReposData(txtPath.getText(), cobBranches.getSelectedItem().toString());
-        computeThread.setSetExt(lstExt.getSelectedValuesList());
+        computeThread.setSetExt(lstExt.getSelectedValuesList(), lstFileType.getSelectedValuesList());
         computeThread.setPrbCompute(prbCompute);
         computeThread.setMetric(cobMetric.getSelectedItem().toString());
-        computeThread.setSizes((Integer)spnMaxSize.getValue(),(Integer) spnMinSize.getValue());
+        computeThread.setSizes((Integer) spnMaxSize.getValue(), (Integer) spnMinSize.getValue());
         computeThread.start();
     }//GEN-LAST:event_btnCalculateActionPerformed
 
@@ -413,6 +438,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblFiles;
     private javax.swing.JLabel lblMaxCommit;
@@ -421,9 +447,11 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel lblMinSize;
     private javax.swing.JLabel lblTime;
     private javax.swing.JList<String> lstExt;
+    private javax.swing.JList<String> lstFileType;
     private javax.swing.JList<String> lstUsers;
     private javax.swing.JPanel pnlAuthors;
     private javax.swing.JPanel pnlExt;
+    private javax.swing.JPanel pnlFileType;
     private javax.swing.JPanel pnlSetting;
     private javax.swing.JProgressBar prbCompute;
     private javax.swing.JSlider sldMaxCommit;
