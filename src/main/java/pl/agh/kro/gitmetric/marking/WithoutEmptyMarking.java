@@ -9,13 +9,13 @@ package pl.agh.kro.gitmetric.marking;
  *
  * @author Tomek
  */
-public class WithoutEmptyMarking extends BasicMarking{
+public class WithoutEmptyMarking extends BasicMarking {
 
     @Override
     public void incMap(String person, Integer value, String line) {
-        if(line!=null && !line.equals("")){
+        if (line != null && !line.equals("")) {
             super.incMap(person, value, line);
         }
     }
-    
+
 }

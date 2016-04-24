@@ -13,19 +13,20 @@ import java.util.Set;
  * @author Tomek
  */
 public abstract class Marking {
+
     Map<String, Integer> users;
 
     public Marking() {
         users = new HashMap<>();
     }
-   
-    public abstract void incMap(String person,Integer value,String line);
+
+    public abstract void incMap(String person, Integer value, String line);
 
     public Map<String, Integer> getUsers() {
         return users;
     }
-    
-    public Set<String> getNames(){
+
+    public Set<String> getNames() {
         return users.keySet();
     }
 }

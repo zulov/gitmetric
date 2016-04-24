@@ -1,7 +1,6 @@
 package pl.agh.kro.gitmetric;
 
 import java.awt.BorderLayout;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
@@ -52,10 +51,11 @@ public class Utils {
         DefaultPieDataset dataset = new DefaultPieDataset();
 
         for (String key : datas.keySet()) {
-            if (datas.get(key) <= 0) {
+            Integer value = datas.get(key);
+            if (value <= 0) {
                 continue;
             }
-            dataset.setValue(key + " - " + datas.get(key), datas.get(key));
+            dataset.setValue(key + " - " + value, value);
         }
 
         JFreeChart chart = ChartFactory.createPieChart3D(

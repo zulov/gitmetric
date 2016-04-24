@@ -25,7 +25,6 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
@@ -65,7 +64,7 @@ public class GitUtils {
         if (logs == null) {
             return new ArrayList<>(0);
         }
-        List<RevCommit> logsList = new ArrayList<>();
+        List<RevCommit> logsList = new ArrayList<>(50);
         for (RevCommit rev : logs) {
             logsList.add(rev);
         }
@@ -126,7 +125,7 @@ public class GitUtils {
     }
 
     public static void authorsOfFile(Marking marking, Repository repository, ObjectId commitId, String fileName, int lines) {
-        System.out.println(fileName);
+        //System.out.println(fileName);
         try {
             BlameCommand blamer = new BlameCommand(repository)
                     .setStartCommit(commitId).setFilePath(fileName);

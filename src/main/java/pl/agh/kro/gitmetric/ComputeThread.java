@@ -12,7 +12,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.ObjectId;
@@ -62,7 +61,7 @@ public class ComputeThread extends Thread {
         Marking marking = MarkingFactory.getMarking(metric);
         Repository repository = GitUtils.getRepository(path);
         ObjectId commitId = GitUtils.getCommitId(repository, branch);
-        
+
         Map<String, Integer> extsMap = new HashMap<>();
         Map<String, Integer> fileTypeMap = new HashMap<>();
 
@@ -93,9 +92,9 @@ public class ComputeThread extends Thread {
                 FileHeader fileHeader = diffFormatter.toFileHeader(entry);
                 String extension = getExtension(fileHeader.getNewPath());
                 makeSureMapsAreFilled(extsMap, extension, fileTypeMap, fileHeader);
-                
+
                 int lines = GitUtils.linesNumber(repository, commitId, entry.getNewPath());
-                
+
                 if (isValid(fileHeader.getPatchType().toString(), extension, lines)) {
                     GitUtils.authorsOfFile(marking, repository, commitId, entry.getNewPath(), lines);
                     Utils.addToMap(fileTypeMap, fileHeader.getPatchType().toString(), lines);
@@ -115,21 +114,21 @@ public class ComputeThread extends Thread {
     private void updateInterface(Marking marking, Map<String, Integer> extsMap, Map<String, Integer> fileTypeMap) {
         Utils.fillList(lstUsers, marking.getNames());
         Utils.paintPieChart(pnlAuthors, marking.getUsers());
-        
+
         Utils.fillList(lstExt, extsMap.keySet());
         Utils.paintPieChart(pnlExt, extsMap);
-        
+
         Utils.fillList(lstFileType, fileTypeMap.keySet());
         Utils.paintPieChart(pnlFileType, fileTypeMap);
     }
 
     private void makeSureMapsAreFilled(Map<String, Integer> extsMap, String extension, Map<String, Integer> fileTypeMap, FileHeader fileHeader) {
-        if(!extsMap.containsKey(extension)){
-            extsMap.put(extension,0);
+        if (!extsMap.containsKey(extension)) {
+            extsMap.put(extension, 0);
         }
-        
-        if(!fileTypeMap.containsKey(fileHeader.getPatchType().toString())){
-            fileTypeMap.put(fileHeader.getPatchType().toString(),0);
+
+        if (!fileTypeMap.containsKey(fileHeader.getPatchType().toString())) {
+            fileTypeMap.put(fileHeader.getPatchType().toString(), 0);
         }
     }
 
@@ -146,7 +145,7 @@ public class ComputeThread extends Thread {
         prbCompute.setValue(value + 1);
         lblFiles.setText(entry.getNewPath());
         lblTime.setText((System.currentTimeMillis() - startTime) / 1000f + "s");
-        lblProgres.setText((value+1)+"/"+prbCompute.getMaximum());
+        lblProgres.setText((value + 1) + "/" + prbCompute.getMaximum());
     }
 
     public void setMetric(String metric) {
@@ -168,7 +167,7 @@ public class ComputeThread extends Thread {
         this.setFileType = new HashSet<>(setFileType);
     }
 
-    public void setLabels(JLabel lblFiles, JLabel lblTime,JLabel lblProgres) {
+    public void setLabels(JLabel lblFiles, JLabel lblTime, JLabel lblProgres) {
         this.lblFiles = lblFiles;
         this.lblTime = lblTime;
         this.lblProgres = lblProgres;
