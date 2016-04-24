@@ -25,6 +25,7 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
@@ -111,13 +112,21 @@ public class GitUtils {
         return tree;
     }
     
-    public static void authorsOfFile(Marking marking, Repository repository, String branchName, String fileName,int lines){
-        System.out.println(fileName);
+    public static ObjectId getCommitId(Repository repository,String branchName){
         try {
             ObjectId commitID = repository.resolve(branchName);
-
+            return commitID;
+        } catch (RevisionSyntaxException | IOException ex) {
+            Logger.getLogger(GitUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        return null;
+    }
+    
+    public static void authorsOfFile(Marking marking, Repository repository, ObjectId commitId, String fileName,int lines){
+        System.out.println(fileName);
+        try {
             BlameCommand blamer = new BlameCommand(repository)
-                    .setStartCommit(commitID).setFilePath(fileName);
+                    .setStartCommit(commitId).setFilePath(fileName);
             
             BlameResult blame = blamer.call();
 
@@ -132,8 +141,7 @@ public class GitUtils {
                     break;
                 }
             }
-
-        } catch (RevisionSyntaxException | IOException | GitAPIException ex) {
+        } catch (RevisionSyntaxException | GitAPIException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -146,9 +154,8 @@ public class GitUtils {
         return diffFormatter;
     }
 
-    public static int linesNumber(Repository repository, String branch, String newPath) {
+    public static int linesNumber(Repository repository, ObjectId commitID, String newPath) {
         try {
-            ObjectId commitID = repository.resolve(branch);
             int lines = GitUtils.countFiles(repository, commitID, newPath);
 
             return lines;
