@@ -71,17 +71,18 @@ public class GitUtils {
         }
         return logsList;
     }
-    
-    public static Git getGit(String repoPath){
+
+    public static Git getGit(String repoPath) {
         Repository repository = GitUtils.getRepository(repoPath);
         Git git = new Git(repository);
         return git;
     }
-    public static Git getGit(Repository repository){
+
+    public static Git getGit(Repository repository) {
         Git git = new Git(repository);
         return git;
     }
-    
+
     public static int countFiles(Repository repository, ObjectId commitID, String name) throws IOException {
         RevTree tree = getRevTree(repository, commitID);
 
@@ -93,7 +94,9 @@ public class GitUtils {
                 return 0;
             }
             FileMode fileMode = treeWalk.getFileMode(0);
-            if(!fileMode.equals(FileMode.REGULAR_FILE)){return 0;}
+            if (!fileMode.equals(FileMode.REGULAR_FILE)) {
+                return 0;
+            }
 
             ObjectId objectId = treeWalk.getObjectId(0);
             ObjectLoader loader = repository.open(objectId);
@@ -102,7 +105,7 @@ public class GitUtils {
             loader.copyTo(stream);
 
             return IOUtils.readLines(new ByteArrayInputStream(stream.toByteArray())).size();
-        } 
+        }
     }
 
     private static RevTree getRevTree(Repository repository, ObjectId commitID) throws IOException {
@@ -111,33 +114,33 @@ public class GitUtils {
         revWalk.dispose();
         return tree;
     }
-    
-    public static ObjectId getCommitId(Repository repository,String branchName){
+
+    public static ObjectId getCommitId(Repository repository, String branchName) {
         try {
             ObjectId commitID = repository.resolve(branchName);
             return commitID;
         } catch (RevisionSyntaxException | IOException ex) {
             Logger.getLogger(GitUtils.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        }
         return null;
     }
-    
-    public static void authorsOfFile(Marking marking, Repository repository, ObjectId commitId, String fileName,int lines){
+
+    public static void authorsOfFile(Marking marking, Repository repository, ObjectId commitId, String fileName, int lines) {
         System.out.println(fileName);
         try {
             BlameCommand blamer = new BlameCommand(repository)
                     .setStartCommit(commitId).setFilePath(fileName);
-            
+
             BlameResult blame = blamer.call();
 
             String lastPerson = "error";
             for (int i = 0; i < lines; i++) {
                 try {
                     PersonIdent person = blame.getSourceAuthor(i);
-                    lastPerson=person.getName();
-                    marking.incMap(person.getName(),1,blame.getResultContents().getString(i));
+                    lastPerson = person.getName();
+                    marking.incMap(person.getName(), 1, blame.getResultContents().getString(i));
                 } catch (ArrayIndexOutOfBoundsException ex) {
-                    marking.incMap(lastPerson,lines-i-1,"");
+                    marking.incMap(lastPerson, lines - i - 1, "");
                     break;
                 }
             }
@@ -146,10 +149,10 @@ public class GitUtils {
         }
 
     }
-    
-    public static DiffFormatter prepareDiffFormater(Git git) {
+
+    public static DiffFormatter prepareDiffFormater(Repository repository) {
         DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-        diffFormatter.setRepository(git.getRepository());
+        diffFormatter.setRepository(repository);
         diffFormatter.setContext(0);
         return diffFormatter;
     }

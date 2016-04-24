@@ -122,7 +122,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        cobMetric.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Linie kodu", "Bez pustych" }));
+        cobMetric.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Linie kodu", "Bez pustych", "Dlugosc" }));
 
         jLabel2.setText("Metryka:");
 

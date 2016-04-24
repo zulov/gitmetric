@@ -283,9 +283,10 @@
         <Component class="javax.swing.JComboBox" name="cobMetric">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="2">
+              <StringArray count="3">
                 <StringItem index="0" value="Linie kodu"/>
                 <StringItem index="1" value="Bez pustych"/>
+                <StringItem index="2" value="Dlugosc"/>
               </StringArray>
             </Property>
           </Properties>

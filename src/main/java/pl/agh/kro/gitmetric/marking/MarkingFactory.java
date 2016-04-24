@@ -10,6 +10,8 @@ public class MarkingFactory {
             return new BasicMarking();
         }else if(name.equals("Bez pustych")){
             return new WithoutEmptyMarking();
+        }else if(name.equals("Dlugosc")){
+            return new LengthMarking();
         }else{
             return new BasicMarking();
         }

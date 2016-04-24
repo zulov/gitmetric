@@ -66,14 +66,13 @@ public class ComputeThread extends Thread {
         Map<String, Integer> extsMap = new HashMap<>();
         Map<String, Integer> fileTypeMap = new HashMap<>();
 
-        Git git = GitUtils.getGit(repository);
         List<RevCommit> logs = GitUtils.getLogs(path, branch);
 
         RevCommit oldestCommit = logs.get(minCommit);
         RevCommit newestCommit = logs.get(maxCommit);
 
         // Obtain tree iterators to traverse the tree of the old/new commit
-        ObjectReader reader = git.getRepository().newObjectReader();
+        ObjectReader reader = repository.newObjectReader();
         CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
         CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
         try {
@@ -83,8 +82,7 @@ public class ComputeThread extends Thread {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        DiffFormatter diffFormatter = GitUtils.prepareDiffFormater(git);
-
+        DiffFormatter diffFormatter = GitUtils.prepareDiffFormater(repository);
         try {
             List<DiffEntry> entries = diffFormatter.scan(newTreeIter, oldTreeIter);
             prbCompute.setMaximum(entries.size());
@@ -107,18 +105,22 @@ public class ComputeThread extends Thread {
                 }
             }
 
-            Utils.fillList(lstUsers, marking.getNames());
-            Utils.paintPieChart(pnlAuthors, marking.getUsers());
-
-            Utils.fillList(lstExt, extsMap.keySet());
-            Utils.paintPieChart(pnlExt, extsMap);
-
-            Utils.fillList(lstFileType, fileTypeMap.keySet());
-            Utils.paintPieChart(pnlFileType, fileTypeMap);
+            updateInterface(marking, extsMap, fileTypeMap);
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
         lblTime.setText((System.currentTimeMillis() - startTime) / 1000f + "s");
+    }
+
+    private void updateInterface(Marking marking, Map<String, Integer> extsMap, Map<String, Integer> fileTypeMap) {
+        Utils.fillList(lstUsers, marking.getNames());
+        Utils.paintPieChart(pnlAuthors, marking.getUsers());
+        
+        Utils.fillList(lstExt, extsMap.keySet());
+        Utils.paintPieChart(pnlExt, extsMap);
+        
+        Utils.fillList(lstFileType, fileTypeMap.keySet());
+        Utils.paintPieChart(pnlFileType, fileTypeMap);
     }
 
     private void makeSureMapsAreFilled(Map<String, Integer> extsMap, String extension, Map<String, Integer> fileTypeMap, FileHeader fileHeader) {
