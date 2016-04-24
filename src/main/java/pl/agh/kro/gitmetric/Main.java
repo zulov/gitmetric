@@ -80,6 +80,7 @@ public class Main extends javax.swing.JFrame {
         pnlAuthors = new javax.swing.JPanel();
         pnlFileType = new javax.swing.JPanel();
         lblFiles = new javax.swing.JLabel();
+        lblProgres = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -342,6 +343,12 @@ public class Main extends javax.swing.JFrame {
         lblFiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         lblFiles.setEnabled(false);
 
+        lblProgres.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblProgres.setText("-");
+        lblProgres.setToolTipText("");
+        lblProgres.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        lblProgres.setEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -350,9 +357,12 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(pnlSetting, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTabbedPane1)
-                    .addComponent(lblFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 651, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblProgres, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -364,7 +374,9 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jTabbedPane1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(lblFiles)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblFiles)
+                            .addComponent(lblProgres))))
                 .addContainerGap())
         );
 
@@ -374,7 +386,7 @@ public class Main extends javax.swing.JFrame {
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
         ComputeThread computeThread = new ComputeThread();
         computeThread.setCommits(sldMinCommit.getValue(), sldMaxCommit.getValue());
-        computeThread.setLabels(lblFiles, lblTime);
+        computeThread.setLabels(lblFiles, lblTime, lblProgres);
         computeThread.setLists(lstExt, lstUsers, lstFileType);
         computeThread.setPanels(pnlAuthors, pnlExt, pnlFileType);
         computeThread.setReposData(txtPath.getText(), cobBranches.getSelectedItem().toString());
@@ -511,6 +523,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel lblMaxSize;
     private javax.swing.JLabel lblMinCommit;
     private javax.swing.JLabel lblMinSize;
+    private javax.swing.JLabel lblProgres;
     private javax.swing.JLabel lblTime;
     private javax.swing.JLabel lblToCommit;
     private javax.swing.JList<String> lstExt;

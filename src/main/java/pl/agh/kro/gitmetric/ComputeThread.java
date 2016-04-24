@@ -40,6 +40,7 @@ public class ComputeThread extends Thread {
     private Set<String> setFileType;
     private JLabel lblFiles;
     private JLabel lblTime;
+    private JLabel lblProgres;
 
     private JList<String> lstExt;
     private JList<String> lstUsers;
@@ -107,13 +108,13 @@ public class ComputeThread extends Thread {
             }
 
             Utils.fillList(lstUsers, marking.getNames());
-            Utils.paintPieChart(pnlAuthors, marking.getUsers(), null);
+            Utils.paintPieChart(pnlAuthors, marking.getUsers());
 
             Utils.fillList(lstExt, extsMap.keySet());
-            Utils.paintPieChart(pnlExt, extsMap, setExt);
+            Utils.paintPieChart(pnlExt, extsMap);
 
             Utils.fillList(lstFileType, fileTypeMap.keySet());
-            Utils.paintPieChart(pnlFileType, fileTypeMap, null);
+            Utils.paintPieChart(pnlFileType, fileTypeMap);
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -143,6 +144,7 @@ public class ComputeThread extends Thread {
         prbCompute.setValue(value + 1);
         lblFiles.setText(entry.getNewPath());
         lblTime.setText((System.currentTimeMillis() - startTime) / 1000f + "s");
+        lblProgres.setText((value+1)+"/"+prbCompute.getMaximum());
     }
 
     public void setMetric(String metric) {
@@ -164,9 +166,10 @@ public class ComputeThread extends Thread {
         this.setFileType = new HashSet<>(setFileType);
     }
 
-    public void setLabels(JLabel lblFiles, JLabel lblTime) {
+    public void setLabels(JLabel lblFiles, JLabel lblTime,JLabel lblProgres) {
         this.lblFiles = lblFiles;
         this.lblTime = lblTime;
+        this.lblProgres = lblProgres;
     }
 
     public void setLists(JList<String> lstExt, JList<String> lstUsers, JList<String> lstFileType) {

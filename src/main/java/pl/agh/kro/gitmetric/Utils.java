@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
+import javax.swing.SwingUtilities;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -17,11 +18,15 @@ import org.jfree.data.general.DefaultPieDataset;
 public class Utils {
 
     public static void fillList(javax.swing.JList<String> list, Set<String> set) {
-        DefaultListModel listModel = new DefaultListModel();
-        for (String user : set) {
-            listModel.addElement(user);
-        }
-        list.setModel(listModel);
+        SwingUtilities.invokeLater(() -> {
+            list.removeAll();
+            DefaultListModel listModel = new DefaultListModel();
+            for (String user : set) {
+                listModel.addElement(user);
+            }
+            list.setModel(listModel);
+        });
+
     }
 
     public static String getExt(String name) {
@@ -42,12 +47,12 @@ public class Utils {
             map.put(key, value);
         }
     }
-    
-    public static void paintPieChart(javax.swing.JPanel panel, Map<String, Integer> datas, Set<String> setExt) {
+
+    public static void paintPieChart(javax.swing.JPanel panel, Map<String, Integer> datas) {
         DefaultPieDataset dataset = new DefaultPieDataset();
 
         for (String key : datas.keySet()) {
-            if (setExt != null && !setExt.isEmpty() && !setExt.contains(key)) {
+            if (datas.get(key) <= 0) {
                 continue;
             }
             dataset.setValue(key + " - " + datas.get(key), datas.get(key));
