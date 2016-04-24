@@ -1,6 +1,7 @@
 package pl.agh.kro.gitmetric;
 
 import java.awt.BorderLayout;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
@@ -16,7 +17,6 @@ import org.jfree.data.general.DefaultPieDataset;
 public class Utils {
 
     public static void fillList(javax.swing.JList<String> list, Set<String> set) {
-        list.removeAll();
         DefaultListModel listModel = new DefaultListModel();
         for (String user : set) {
             listModel.addElement(user);
