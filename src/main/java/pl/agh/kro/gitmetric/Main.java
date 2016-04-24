@@ -73,6 +73,8 @@ public class Main extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         lstFileType = new javax.swing.JList<>();
         btnBrowse = new javax.swing.JButton();
+        lblFromCommit = new javax.swing.JLabel();
+        lblToCommit = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlExt = new javax.swing.JPanel();
         pnlAuthors = new javax.swing.JPanel();
@@ -129,7 +131,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        jLabel3.setText("Branche:");
+        jLabel3.setText("Branch:");
 
         lstExt.setBorder(javax.swing.BorderFactory.createTitledBorder("Rozszerzenia"));
         lstExt.setLayoutOrientation(javax.swing.JList.VERTICAL_WRAP);
@@ -172,6 +174,16 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        lblFromCommit.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblFromCommit.setText("-");
+        lblFromCommit.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        lblToCommit.setBackground(new java.awt.Color(204, 204, 204));
+        lblToCommit.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblToCommit.setText("-");
+        lblToCommit.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        lblToCommit.setMinimumSize(new java.awt.Dimension(8, 18));
+
         javax.swing.GroupLayout pnlSettingLayout = new javax.swing.GroupLayout(pnlSetting);
         pnlSetting.setLayout(pnlSettingLayout);
         pnlSettingLayout.setHorizontalGroup(
@@ -179,9 +191,21 @@ public class Main extends javax.swing.JFrame {
             .addGroup(pnlSettingLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblToCommit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtPath)
                     .addComponent(btnCalculate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(prbCompute, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(pnlSettingLayout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblTime, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane2)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(pnlSettingLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnBrowse))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
                         .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
@@ -194,32 +218,24 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(lblMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spnMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(lblMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spnMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(lblMinCommit, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
-                            .addComponent(lblMaxCommit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblMaxCommit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(154, 154, 154))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlSettingLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addComponent(sldMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                            .addComponent(sldMinCommit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(sldMaxCommit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(lblTime, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane2)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(pnlSettingLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnBrowse)))
+                        .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addComponent(lblMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblFromCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -228,7 +244,7 @@ public class Main extends javax.swing.JFrame {
         pnlSettingLayout.setVerticalGroup(
             pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlSettingLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnBrowse))
@@ -239,10 +255,14 @@ public class Main extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lblMinCommit))
                     .addComponent(sldMinCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0)
+                .addComponent(lblFromCommit)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblMaxCommit)
                     .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0)
+                .addComponent(lblToCommit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
@@ -286,7 +306,7 @@ public class Main extends javax.swing.JFrame {
         );
         pnlExtLayout.setVerticalGroup(
             pnlExtLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 562, Short.MAX_VALUE)
+            .addGap(0, 565, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Rozszerzenia", pnlExt);
@@ -299,7 +319,7 @@ public class Main extends javax.swing.JFrame {
         );
         pnlAuthorsLayout.setVerticalGroup(
             pnlAuthorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 566, Short.MAX_VALUE)
+            .addGap(0, 569, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Rozkład autorstwa", pnlAuthors);
@@ -312,7 +332,7 @@ public class Main extends javax.swing.JFrame {
         );
         pnlFileTypeLayout.setVerticalGroup(
             pnlFileTypeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 566, Short.MAX_VALUE)
+            .addGap(0, 569, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Typy plików", pnlFileType);
@@ -371,6 +391,7 @@ public class Main extends javax.swing.JFrame {
         }
         lblMinCommit.setText("Od: " + sldMinCommit.getValue());
         lblMaxCommit.setText("Do: " + sldMaxCommit.getValue());
+        refresh();
     }//GEN-LAST:event_sldMinCommitStateChanged
 
     private void sldMaxCommitStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldMaxCommitStateChanged
@@ -379,9 +400,14 @@ public class Main extends javax.swing.JFrame {
         }
         lblMinCommit.setText("Od: " + sldMinCommit.getValue());
         lblMaxCommit.setText("Do: " + sldMaxCommit.getValue());
+        refresh();
     }//GEN-LAST:event_sldMaxCommitStateChanged
 
     private void cobBranchesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cobBranchesItemStateChanged
+        refresh();
+    }//GEN-LAST:event_cobBranchesItemStateChanged
+
+    private void refresh() {
         if (cobBranches.getSelectedIndex() == -1) {
             return;
         }
@@ -390,8 +416,9 @@ public class Main extends javax.swing.JFrame {
         List<RevCommit> logs = GitUtils.getLogs(path, branch);
 
         sliderValidator.validate(sldMinCommit, sldMaxCommit, logs.size());
-    }//GEN-LAST:event_cobBranchesItemStateChanged
-
+        lblFromCommit.setText(logs.get(sldMinCommit.getValue()).getShortMessage());
+        lblToCommit.setText(logs.get(sldMaxCommit.getValue()).getShortMessage());
+    }
     private void spnMinSizeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnMinSizeStateChanged
         if (((Integer) spnMaxSize.getValue()) <= ((Integer) spnMinSize.getValue())) {
             spnMinSize.setValue(((Integer) spnMaxSize.getValue()) - 1);
@@ -479,11 +506,13 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblFiles;
+    private javax.swing.JLabel lblFromCommit;
     private javax.swing.JLabel lblMaxCommit;
     private javax.swing.JLabel lblMaxSize;
     private javax.swing.JLabel lblMinCommit;
     private javax.swing.JLabel lblMinSize;
     private javax.swing.JLabel lblTime;
+    private javax.swing.JLabel lblToCommit;
     private javax.swing.JList<String> lstExt;
     private javax.swing.JList<String> lstFileType;
     private javax.swing.JList<String> lstUsers;
