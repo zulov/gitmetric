@@ -51,18 +51,18 @@ public class Main extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         btnCalculate = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        lstUsers = new javax.swing.JList<>();
+        lstUsers = new javax.swing.JList<String>();
         lblMinCommit = new javax.swing.JLabel();
         lblMaxCommit = new javax.swing.JLabel();
         prbCompute = new javax.swing.JProgressBar();
         sldMinCommit = new javax.swing.JSlider();
         sldMaxCommit = new javax.swing.JSlider();
-        cobMetric = new javax.swing.JComboBox<>();
+        cobMetric = new javax.swing.JComboBox<String>();
         jLabel2 = new javax.swing.JLabel();
-        cobBranches = new javax.swing.JComboBox<>();
+        cobBranches = new javax.swing.JComboBox<String>();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        lstExt = new javax.swing.JList<>();
+        lstExt = new javax.swing.JList<String>();
         lblMaxSize = new javax.swing.JLabel();
         lblMinSize = new javax.swing.JLabel();
         spnMaxSize = new javax.swing.JSpinner();
@@ -71,7 +71,7 @@ public class Main extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         lblTime = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        lstFileType = new javax.swing.JList<>();
+        lstFileType = new javax.swing.JList<String>();
         btnBrowse = new javax.swing.JButton();
         lblFromCommit = new javax.swing.JLabel();
         lblToCommit = new javax.swing.JLabel();
@@ -79,6 +79,7 @@ public class Main extends javax.swing.JFrame {
         pnlExt = new javax.swing.JPanel();
         pnlAuthors = new javax.swing.JPanel();
         pnlFileType = new javax.swing.JPanel();
+        pnlCommitHistory = new javax.swing.JPanel();
         lblFiles = new javax.swing.JLabel();
         lblProgres = new javax.swing.JLabel();
 
@@ -122,7 +123,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        cobMetric.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Linie kodu", "Bez pustych", "Dlugosc" }));
+        cobMetric.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Linie kodu", "Bez pustych", "Dlugosc" }));
 
         jLabel2.setText("Metryka:");
 
@@ -335,6 +336,19 @@ public class Main extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Typy plików", pnlFileType);
 
+        javax.swing.GroupLayout pnlCommitHistoryLayout = new javax.swing.GroupLayout(pnlCommitHistory);
+        pnlCommitHistory.setLayout(pnlCommitHistoryLayout);
+        pnlCommitHistoryLayout.setHorizontalGroup(
+            pnlCommitHistoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 725, Short.MAX_VALUE)
+        );
+        pnlCommitHistoryLayout.setVerticalGroup(
+            pnlCommitHistoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 582, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Historia commitów", pnlCommitHistory);
+
         lblFiles.setText("-");
         lblFiles.setToolTipText("");
         lblFiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -385,7 +399,7 @@ public class Main extends javax.swing.JFrame {
         computeThread.setCommits(sldMinCommit.getValue(), sldMaxCommit.getValue());
         computeThread.setLabels(lblFiles, lblTime, lblProgres);
         computeThread.setLists(lstExt, lstUsers, lstFileType);
-        computeThread.setPanels(pnlAuthors, pnlExt, pnlFileType);
+        computeThread.setPanels(pnlAuthors, pnlExt, pnlFileType, pnlCommitHistory);
         computeThread.setReposData(txtPath.getText(), cobBranches.getSelectedItem().toString());
         computeThread.setSetExt(lstExt.getSelectedValuesList(), lstFileType.getSelectedValuesList());
         computeThread.setPrbCompute(prbCompute);
@@ -528,6 +542,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JList<String> lstFileType;
     private javax.swing.JList<String> lstUsers;
     private javax.swing.JPanel pnlAuthors;
+    private javax.swing.JPanel pnlCommitHistory;
     private javax.swing.JPanel pnlExt;
     private javax.swing.JPanel pnlFileType;
     private javax.swing.JPanel pnlSetting;

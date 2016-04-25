@@ -5,9 +5,11 @@
  */
 package pl.agh.kro.gitmetric.marking;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.jfree.data.time.TimeSeries;
 
 /**
  * @author Tomek
@@ -15,12 +17,14 @@ import java.util.Set;
 public abstract class Marking {
 
     Map<String, Integer> users;
+    Map<String, TimeSeries> userToHistory;
 
     public Marking() {
         users = new HashMap<>();
+        userToHistory = new HashMap<>();
     }
 
-    public abstract void incMap(String person, Integer value, String line);
+    public abstract void incMap(String person, Integer value, String line, Date date);
 
     public Map<String, Integer> getUsers() {
         return users;
@@ -28,5 +32,9 @@ public abstract class Marking {
 
     public Set<String> getNames() {
         return users.keySet();
+    }
+    
+    public Map<String, TimeSeries> getUserToHistory() {
+        return userToHistory;
     }
 }

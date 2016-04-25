@@ -9,7 +9,10 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 
 /**
  * @author Tomek
@@ -73,6 +76,31 @@ public class Utils {
 //        for (int i = 0; i < datas.size(); i++) {
 //            plot.setSectionPaint(datas.get(i).name, partie[i].color);
 //        }
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(panel.getSize()));
+        chartPanel.setVisible(true);
+        panel.setLayout(new java.awt.BorderLayout());
+        panel.removeAll();
+        panel.add(chartPanel, BorderLayout.CENTER);
+        panel.validate();
+    }
+
+    public static void paintTimeSeries(javax.swing.JPanel panel, Map<String, TimeSeries> data) {
+        TimeSeriesCollection dataset = new TimeSeriesCollection();
+        for (TimeSeries ts : data.values()) {
+            dataset.addSeries(ts);
+        }
+        JFreeChart chart = ChartFactory.createTimeSeriesChart(
+                "Historia commitów w czasie",
+                "Data",
+                "Liczba linii",
+                dataset,
+                true,
+                true,
+                false);
+
+        final XYPlot plot = (XYPlot) chart.getPlot();
+        plot.setForegroundAlpha(0.75f);
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(panel.getSize()));
         chartPanel.setVisible(true);

@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -133,13 +134,15 @@ public class GitUtils {
             BlameResult blame = blamer.call();
 
             String lastPerson = "error";
+            Date lastDate = new Date(0, 1, 1);
             for (int i = 0; i < lines; i++) {
                 try {
                     PersonIdent person = blame.getSourceAuthor(i);
                     lastPerson = person.getName();
-                    marking.incMap(person.getName(), 1, blame.getResultContents().getString(i));
+                    lastDate = person.getWhen();
+                    marking.incMap(lastPerson, 1, blame.getResultContents().getString(i), lastDate);
                 } catch (ArrayIndexOutOfBoundsException ex) {
-                    marking.incMap(lastPerson, lines - i - 1, "");
+                    marking.incMap(lastPerson, lines - i - 1, "", lastDate);
                     break;
                 }
             }

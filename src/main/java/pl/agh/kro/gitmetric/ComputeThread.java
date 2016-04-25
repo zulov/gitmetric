@@ -51,6 +51,7 @@ public class ComputeThread extends Thread {
     private JPanel pnlExt;
     private JPanel pnlAuthors;
     private JPanel pnlFileType;
+    private JPanel pnlCommitHistory;
 
     private JProgressBar prbCompute;
 
@@ -120,6 +121,8 @@ public class ComputeThread extends Thread {
 
         Utils.fillList(lstFileType, fileTypeMap.keySet());
         Utils.paintPieChart(pnlFileType, fileTypeMap);
+        
+        Utils.paintTimeSeries(pnlCommitHistory, marking.getUserToHistory());
     }
 
     private void makeSureMapsAreFilled(Map<String, Integer> extsMap, String extension, Map<String, Integer> fileTypeMap, FileHeader fileHeader) {
@@ -184,10 +187,11 @@ public class ComputeThread extends Thread {
         this.minSize = minSize;
     }
 
-    public void setPanels(JPanel pnlAuthors, JPanel pnlExt, JPanel pnlFileType) {
+    public void setPanels(JPanel pnlAuthors, JPanel pnlExt, JPanel pnlFileType, JPanel pnlCommitHistory) {
         this.pnlAuthors = pnlAuthors;
         this.pnlExt = pnlExt;
         this.pnlFileType = pnlFileType;
+        this.pnlCommitHistory = pnlCommitHistory;
     }
 
     public void setPrbCompute(JProgressBar prbCompute) {
