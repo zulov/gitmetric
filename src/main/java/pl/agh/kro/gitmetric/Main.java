@@ -410,9 +410,11 @@ public class Main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
-        ComputeThread computeThread = new ComputeThread();
-        computeThread.setCommits(sldMaxCommit.getMaximum()-sldMaxCommit.getValue(), sldMinCommit.getMaximum()-sldMinCommit.getValue());
-        //computeThread.setCommits(sldMaxCommit.getValue(), sldMinCommit.getValue());
+//        ComputeThread computeThread = new ComputeThread();
+//        computeThread.setCommits(sldMaxCommit.getMaximum()-sldMaxCommit.getValue(), sldMinCommit.getMaximum()-sldMinCommit.getValue());
+        
+        ComputeThread1 computeThread = new ComputeThread1();
+        computeThread.setCommits(sldMinCommit.getMaximum() - sldMinCommit.getValue(), sldMaxCommit.getMaximum() - sldMaxCommit.getValue());
         computeThread.setLabels(lblFiles, lblTime, lblProgres);
         computeThread.setLists(lstExt, lstUsers, lstFileType);
         computeThread.setPanels(pnlAuthors, pnlExt, pnlFileType, pnlCommitHistory);

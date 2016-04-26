@@ -98,7 +98,6 @@ public class Utils {
                 true,
                 true,
                 false);
-        System.out.println(dataset.toString());
         final XYPlot plot = (XYPlot) chart.getPlot();
         plot.setForegroundAlpha(0.75f);
         ChartPanel chartPanel = new ChartPanel(chart);

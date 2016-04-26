@@ -126,7 +126,6 @@ public class GitUtils {
     }
 
     public static void authorsOfFile(Marking marking, Repository repository, ObjectId commitId, String fileName, int lines) {
-        //System.out.println(fileName);
         try {
             BlameCommand blamer = new BlameCommand(repository)
                     .setStartCommit(commitId).setFilePath(fileName);
