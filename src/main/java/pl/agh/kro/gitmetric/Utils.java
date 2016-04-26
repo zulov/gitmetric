@@ -62,7 +62,7 @@ public class Utils {
         }
 
         JFreeChart chart = ChartFactory.createPieChart3D(
-                "Rozkład rozszerzeń", // chart title                   
+                null, // chart title                   
                 dataset, // data 
                 true, // include legend                   
                 true,
@@ -91,14 +91,14 @@ public class Utils {
             dataset.addSeries(ts);
         }
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Historia commitów w czasie",
+                null,
                 "Data",
                 "Liczba linii",
                 dataset,
                 true,
                 true,
                 false);
-
+        System.out.println(dataset.toString());
         final XYPlot plot = (XYPlot) chart.getPlot();
         plot.setForegroundAlpha(0.75f);
         ChartPanel chartPanel = new ChartPanel(chart);

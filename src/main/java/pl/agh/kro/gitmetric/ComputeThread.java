@@ -20,6 +20,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevCommitList;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import pl.agh.kro.gitmetric.git.GitUtils;
 import pl.agh.kro.gitmetric.marking.Marking;
@@ -37,6 +38,7 @@ public class ComputeThread extends Thread {
     private int maxCommit;
     private Set<String> setExt;
     private Set<String> setFileType;
+    private Set<String> setUsers;
     private JLabel lblFiles;
     private JLabel lblTime;
     private JLabel lblProgres;
@@ -95,7 +97,6 @@ public class ComputeThread extends Thread {
                 makeSureMapsAreFilled(extsMap, extension, fileTypeMap, fileHeader);
 
                 int lines = GitUtils.linesNumber(repository, commitId, entry.getNewPath());
-
                 if (isValid(fileHeader.getPatchType().toString(), extension, lines)) {
                     GitUtils.authorsOfFile(marking, repository, commitId, entry.getNewPath(), lines);
                     Utils.addToMap(fileTypeMap, fileHeader.getPatchType().toString(), lines);
@@ -165,9 +166,10 @@ public class ComputeThread extends Thread {
         this.maxCommit = maxCommit;
     }
 
-    public void setSetExt(List<String> setExt, List<String> setFileType) {
+    public void setSets(List<String> setExt, List<String> setFileType, List<String> setUsers) {
         this.setExt = new HashSet<>(setExt);
         this.setFileType = new HashSet<>(setFileType);
+        this.setUsers = new HashSet<>(setUsers);
     }
 
     public void setLabels(JLabel lblFiles, JLabel lblTime, JLabel lblProgres) {
@@ -200,6 +202,15 @@ public class ComputeThread extends Thread {
 
     private boolean isValid(String fileType, String ext, int lines) {
         if ((!setFileType.contains(fileType) && !setFileType.isEmpty()) || (!setExt.contains(ext) && !setExt.isEmpty()) || lines >= maxSize || lines <= minSize) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    //tego się nie da użyć, bo badamy tylko diffy między ostatnim a pierwszym commitem, a diff może zawierać kilku autorów
+    private boolean isValid(String user, String fileType, String ext, int lines) {
+        if ((!(setUsers.isEmpty() || setUsers.contains(user))) || (!setFileType.contains(fileType) && !setFileType.isEmpty()) || (!setExt.contains(ext) && !setExt.isEmpty()) || lines >= maxSize || lines <= minSize) {
             return false;
         } else {
             return true;

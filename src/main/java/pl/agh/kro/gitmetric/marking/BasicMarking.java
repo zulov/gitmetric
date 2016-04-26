@@ -21,9 +21,7 @@ public class BasicMarking extends Marking {
         } else {
             users.put(person, value);
         }
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        Day day = new Day(cal.get(Calendar.DAY_OF_MONTH) + 1, cal.get(Calendar.MONTH), cal.get(Calendar.YEAR));
+        Day day = new Day(date);
         if (userToHistory.containsKey(person)) {
             TimeSeries ts = userToHistory.get(person);
             Number currentValue = ts.getValue(day);
@@ -32,8 +30,7 @@ public class BasicMarking extends Marking {
             }
             ts.addOrUpdate(day, value + currentValue.intValue());
         } else {
-            TimeSeries ts = new TimeSeries(person, Day.class);
-            //ts.add(new Day(10, 1, 2004), value);
+            TimeSeries ts = new TimeSeries(person);
             userToHistory.put(person, ts);
         }
 

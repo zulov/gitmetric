@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFileChooser;
+import javax.swing.ListSelectionModel;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand.ListMode;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -52,6 +54,7 @@ public class Main extends javax.swing.JFrame {
         btnCalculate = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstUsers = new javax.swing.JList<String>();
+        lstUsers.setSelectionModel(new DefaultListSelectionModel() {     @Override     public void setSelectionInterval(int index0, int index1) {         if(super.isSelectedIndex(index0)) {             super.removeSelectionInterval(index0, index1);         }         else {             super.addSelectionInterval(index0, index1);         }     } });
         lblMinCommit = new javax.swing.JLabel();
         lblMaxCommit = new javax.swing.JLabel();
         prbCompute = new javax.swing.JProgressBar();
@@ -63,6 +66,17 @@ public class Main extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         lstExt = new javax.swing.JList<String>();
+        lstExt.setSelectionModel(new DefaultListSelectionModel() {
+            @Override
+            public void setSelectionInterval(int index0, int index1) {
+                if(super.isSelectedIndex(index0)) {
+                    super.removeSelectionInterval(index0, index1);
+                }
+                else {
+                    super.addSelectionInterval(index0, index1);
+                }
+            }
+        });
         lblMaxSize = new javax.swing.JLabel();
         lblMinSize = new javax.swing.JLabel();
         spnMaxSize = new javax.swing.JSpinner();
@@ -72,6 +86,7 @@ public class Main extends javax.swing.JFrame {
         lblTime = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         lstFileType = new javax.swing.JList<String>();
+        lstFileType.setSelectionModel(new DefaultListSelectionModel() {     @Override     public void setSelectionInterval(int index0, int index1) {         if(super.isSelectedIndex(index0)) {             super.removeSelectionInterval(index0, index1);         }         else {             super.addSelectionInterval(index0, index1);         }     } });
         btnBrowse = new javax.swing.JButton();
         lblFromCommit = new javax.swing.JLabel();
         lblToCommit = new javax.swing.JLabel();
@@ -280,11 +295,11 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(spnMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(11, 11, 11)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCalculate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(prbCompute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -305,7 +320,7 @@ public class Main extends javax.swing.JFrame {
         );
         pnlExtLayout.setVerticalGroup(
             pnlExtLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGap(0, 581, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Rozszerzenia", pnlExt);
@@ -318,7 +333,7 @@ public class Main extends javax.swing.JFrame {
         );
         pnlAuthorsLayout.setVerticalGroup(
             pnlAuthorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 569, Short.MAX_VALUE)
+            .addGap(0, 585, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Rozkład autorstwa", pnlAuthors);
@@ -331,7 +346,7 @@ public class Main extends javax.swing.JFrame {
         );
         pnlFileTypeLayout.setVerticalGroup(
             pnlFileTypeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 569, Short.MAX_VALUE)
+            .addGap(0, 585, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Typy plików", pnlFileType);
@@ -344,7 +359,7 @@ public class Main extends javax.swing.JFrame {
         );
         pnlCommitHistoryLayout.setVerticalGroup(
             pnlCommitHistoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 582, Short.MAX_VALUE)
+            .addGap(0, 585, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Historia commitów", pnlCommitHistory);
@@ -396,12 +411,13 @@ public class Main extends javax.swing.JFrame {
 
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
         ComputeThread computeThread = new ComputeThread();
-        computeThread.setCommits(sldMinCommit.getValue(), sldMaxCommit.getValue());
+        computeThread.setCommits(sldMaxCommit.getMaximum()-sldMaxCommit.getValue(), sldMinCommit.getMaximum()-sldMinCommit.getValue());
+        //computeThread.setCommits(sldMaxCommit.getValue(), sldMinCommit.getValue());
         computeThread.setLabels(lblFiles, lblTime, lblProgres);
         computeThread.setLists(lstExt, lstUsers, lstFileType);
         computeThread.setPanels(pnlAuthors, pnlExt, pnlFileType, pnlCommitHistory);
         computeThread.setReposData(txtPath.getText(), cobBranches.getSelectedItem().toString());
-        computeThread.setSetExt(lstExt.getSelectedValuesList(), lstFileType.getSelectedValuesList());
+        computeThread.setSets(lstExt.getSelectedValuesList(), lstFileType.getSelectedValuesList(), lstUsers.getSelectedValuesList());
         computeThread.setPrbCompute(prbCompute);
         computeThread.setMetric(cobMetric.getSelectedItem().toString());
         computeThread.setSizes((Integer) spnMaxSize.getValue(), (Integer) spnMinSize.getValue());
@@ -439,8 +455,8 @@ public class Main extends javax.swing.JFrame {
         List<RevCommit> logs = GitUtils.getLogs(path, branch);
 
         sliderValidator.validate(sldMinCommit, sldMaxCommit, logs.size());
-        lblFromCommit.setText(logs.get(sldMinCommit.getValue()).getShortMessage());
-        lblToCommit.setText(logs.get(sldMaxCommit.getValue()).getShortMessage());
+        lblFromCommit.setText(logs.get(sldMinCommit.getMaximum()-sldMinCommit.getValue()).getShortMessage());
+        lblToCommit.setText(logs.get(sldMaxCommit.getMaximum()-sldMaxCommit.getValue()).getShortMessage());
     }
     private void spnMinSizeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnMinSizeStateChanged
         if (((Integer) spnMaxSize.getValue()) <= ((Integer) spnMinSize.getValue())) {
