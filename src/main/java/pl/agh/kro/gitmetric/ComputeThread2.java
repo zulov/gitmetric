@@ -1,5 +1,6 @@
 package pl.agh.kro.gitmetric;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.Edit.Type;
 import org.eclipse.jgit.diff.EditList;
+import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -33,7 +35,7 @@ import pl.agh.kro.gitmetric.marking.MarkingFactory;
 /**
  * @author Tomek
  */
-public class ComputeThread1 extends Thread {
+public class ComputeThread2 extends Thread {
 
     private String metric;
     private String path;
@@ -96,36 +98,71 @@ public class ComputeThread1 extends Thread {
 
                 DiffFormatter diffFormatter = GitUtils.prepareDiffFormater(repository);
                 List<DiffEntry> entries = diffFormatter.scan(nextTreeIter, currTreeIter);
-                for (DiffEntry entry : entries) {
-                    int lines = GitUtils.linesNumber(repository, commitId, entry.getNewPath()); //jest wielkość pliku
-                    FileHeader fileHeader = diffFormatter.toFileHeader(entry);
+//                List<DiffEntry> entries = GitUtils.getGit(repository).diff()//Returns a command object to execute a diff command
+//                    .setNewTree(nextTreeIter)
+//                    .setOldTree(currTreeIter)
+//                    .call();
+                for (DiffEntry diffEntry : entries) {
+                    //System.out.println("Entry: " + diffEntry + ", from: " + diffEntry.getOldId() + ", to: " + diffEntry.getNewId());
+//                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+//                    try (DiffFormatter formatter = new DiffFormatter(out)) {
+//                        formatter.setRepository(repository);
+//                        formatter.setContext(0);
+//                        formatter.format(diffEntry);
+//                    }
+//                    RawText r = new RawText(out.toByteArray());
+                    //diffFormatter.setContext(0);
+                    //diffFormatter.format(diffEntry);
+                    int lines = GitUtils.linesNumber(repository, nextCommit.copy(), diffEntry.getNewPath()); //jest wielkość pliku
+                    FileHeader fileHeader = diffFormatter.toFileHeader(diffEntry);
+//                    System.out.println("\n\n---");
+//                    System.out.println(new String(fileHeader.getBuffer(), "UTF-8"));
+//                    System.out.println(fileHeader.getPath(DiffEntry.Side.NEW));
+
                     String extension = getExtension(fileHeader.getNewPath());   //jest rozszerzenie 
                     String fileType = fileHeader.getPatchType().toString(); //jest typ pliku
+                    //System.out.println("Filename: " + fileHeader.getNewPath());
+                    //System.out.println(" "+fileHeader.getScriptText());
                     makeSureMapsAreFilled(extToLineCountMap, fileTypeToLineCountMap, fileHeader);
 
                     List<? extends HunkHeader> hunks = fileHeader.getHunks();
+                    //System.out.println("hunks size: " + hunks.size());
                     if (isValid(author.getName(), fileType, extension, lines)) {
                         for (HunkHeader hunk : hunks) {
-                            System.out.println(hunk);
-                            int value = 0;
+                            //System.out.println(hunk);
+                            //System.out.println("    linesContext: " + hunk.getLinesContext());
+                            //System.out.println("    newLineCount: " + hunk.getNewLineCount());
                             if (fileType.equals("BINARY")) {
-                                value = GitUtils.linesNumber(repository, nextCommit.copy(), entry.getNewPath());
+                                int value = GitUtils.linesNumber(repository, commitId, diffEntry.getNewPath());
+                                marking.incMap(author.getName(), value, "helikopter", date);
+                                Utils.addToMap(fileTypeToLineCountMap, fileType, value);
+                                Utils.addToMap(extToLineCountMap, extension, value);
                             } else {
-
                                 EditList editList = hunk.toEditList();
+                                //System.out.println("    editList size: " + editList.size());
+                                //System.out.println("    editList: " + editList.toString());
+
                                 for (Edit edit : editList) {
-                                    value += getLineCount(edit, onlyAdditions);
+                                    if ((!onlyAdditions && edit.getType() == Type.REPLACE) || (edit.getType() == Type.INSERT)) {
+                                        //System.out.println("    edit: " + edit.toString());
+                                        for (int j = edit.getBeginB(); j < edit.getEndB(); j++) {
+                                            String line = getLineFromFile(j, hunk.getFileHeader().getNewPath(), currentCommit, repository);
+                                            if (marking.incMap(author.getName(), 1, line, date)) {
+                                                Utils.addToMap(fileTypeToLineCountMap, fileType, 1);
+                                                Utils.addToMap(extToLineCountMap, extension, 1);
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                            marking.incMap(author.getName(), value, "helikopter", date);
-                            Utils.addToMap(fileTypeToLineCountMap, fileType, value);
-                            Utils.addToMap(extToLineCountMap, extension, value);
                         }
                     }
                 }
                 //updateInterface(marking, extToLineCountMap, fileTypeToLineCountMap);
             } catch (IOException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (GitAPIException ex) {
+//                Logger.getLogger(ComputeThread2.class.getName()).log(Level.SEVERE, null, ex);
             }
             updateInterface(currentCommit, startTime);
         }
@@ -251,6 +288,12 @@ public class ComputeThread1 extends Thread {
             return edit.getLengthB();
         }
         return 0;
+    }
+
+    private String getLineFromFile(int j, String newPath, RevCommit nextCommit, Repository repository) {
+        RawText r = GitUtils.getFileFromCommit(repository, nextCommit.copy(), newPath);
+        //System.out.println("    line "+j+": "+r.getString(j));
+        return r.getString(j);
     }
 
 }

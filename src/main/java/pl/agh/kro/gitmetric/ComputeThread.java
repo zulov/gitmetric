@@ -20,7 +20,6 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevCommitList;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import pl.agh.kro.gitmetric.git.GitUtils;
 import pl.agh.kro.gitmetric.marking.Marking;

@@ -26,6 +26,9 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
@@ -126,6 +129,7 @@ public class GitUtils {
     }
 
     public static void authorsOfFile(Marking marking, Repository repository, ObjectId commitId, String fileName, int lines) {
+        System.out.println(fileName);
         try {
             BlameCommand blamer = new BlameCommand(repository)
                     .setStartCommit(commitId).setFilePath(fileName);
@@ -169,4 +173,39 @@ public class GitUtils {
         return 0;
     }
 
+    public static RawText getFileFromCommit(Repository repository, ObjectId lastCommitId, String filename) {
+        RawText r;
+        // a RevWalk allows to walk over commits based on some filtering that is defined
+        try (RevWalk revWalk = new RevWalk(repository)) {
+            RevCommit commit = revWalk.parseCommit(lastCommitId);
+            // and using commit's tree find the path
+            RevTree tree = commit.getTree();
+            //System.out.println("Having tree: " + tree);
+
+            // now try to find a specific file
+            try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                treeWalk.addTree(tree);
+                treeWalk.setRecursive(true);
+                treeWalk.setFilter(PathFilter.create(filename));
+                if (!treeWalk.next()) {
+                    throw new IllegalStateException("Did not find expected file '" + filename + "'");
+                }
+
+                ObjectId objectId = treeWalk.getObjectId(0);
+                ObjectLoader loader = repository.open(objectId);
+
+                // and then one can the loader to read the file
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                loader.copyTo(out);
+                r = new RawText(out.toByteArray());
+            }
+            revWalk.dispose();
+            return r;
+        } catch (IncorrectObjectTypeException ex) {
+            Logger.getLogger(GitUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(GitUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
 }

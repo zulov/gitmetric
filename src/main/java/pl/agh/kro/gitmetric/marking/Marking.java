@@ -23,8 +23,15 @@ public abstract class Marking {
         users = new HashMap<>();
         userToHistory = new HashMap<>();
     }
-
-    public abstract void incMap(String person, Integer value, String line, Date date);
+    /**
+     * 
+     * @param person
+     * @param value
+     * @param line
+     * @param date
+     * @return true if map was modified
+     */
+    public abstract boolean incMap(String person, Integer value, String line, Date date);
 
     public Map<String, Integer> getUsers() {
         return users;

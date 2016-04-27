@@ -15,7 +15,7 @@ public class BasicMarking extends Marking {
     }
 
     @Override
-    public void incMap(String person, Integer value, String line, Date date) {
+    public boolean incMap(String person, Integer value, String line, Date date) {
         if (users.containsKey(person)) {
             users.put(person, users.get(person) + value);
         } else {
@@ -33,6 +33,6 @@ public class BasicMarking extends Marking {
             TimeSeries ts = new TimeSeries(person);
             userToHistory.put(person, ts);
         }
-
+        return true;
     }
 }

@@ -13,7 +13,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFileChooser;
-import javax.swing.ListSelectionModel;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand.ListMode;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -102,7 +101,7 @@ public class Main extends javax.swing.JFrame {
 
         pnlSetting.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Ustawienia"));
 
-        txtPath.setText("D:\\Nauka\\SmartParkowanie\\.git");
+        txtPath.setText("D:\\SMiP-Metody-Formalne-\\.git");
 
         jLabel1.setText("Ścieżka repozytorium:");
 
@@ -413,7 +412,7 @@ public class Main extends javax.swing.JFrame {
 //        ComputeThread computeThread = new ComputeThread();
 //        computeThread.setCommits(sldMaxCommit.getMaximum()-sldMaxCommit.getValue(), sldMinCommit.getMaximum()-sldMinCommit.getValue());
         
-        ComputeThread1 computeThread = new ComputeThread1();
+        ComputeThread2 computeThread = new ComputeThread2();
         computeThread.setCommits(sldMinCommit.getMaximum() - sldMinCommit.getValue(), sldMaxCommit.getMaximum() - sldMaxCommit.getValue());
         computeThread.setLabels(lblFiles, lblTime, lblProgres);
         computeThread.setLists(lstExt, lstUsers, lstFileType);

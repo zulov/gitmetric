@@ -14,10 +14,11 @@ import java.util.Date;
 public class WithoutEmptyMarking extends BasicMarking {
 
     @Override
-    public void incMap(String person, Integer value, String line, Date date) {
+    public boolean incMap(String person, Integer value, String line, Date date) {
         if (line != null && !line.equals("")) {
-            super.incMap(person, value, line, date);
+            return super.incMap(person, value, line, date);
         }
+        return false;
     }
 
 }

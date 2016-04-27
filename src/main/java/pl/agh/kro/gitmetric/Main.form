@@ -208,7 +208,7 @@
       <SubComponents>
         <Component class="javax.swing.JTextField" name="txtPath">
           <Properties>
-            <Property name="text" type="java.lang.String" value="D:\u005cNauka\u005cSmartParkowanie\u005c.git" containsInvalidXMLChars="true"/>
+            <Property name="text" type="java.lang.String" value="D:\u005cSMiP-Metody-Formalne-\u005c.git" containsInvalidXMLChars="true"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">

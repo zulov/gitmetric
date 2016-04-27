@@ -8,8 +8,8 @@ import java.util.Date;
 public class LengthMarking extends BasicMarking {
 
     @Override
-    public void incMap(String person, Integer value, String line, Date date) {
-        super.incMap(person, value * line.length(), line, date);
+    public boolean incMap(String person, Integer value, String line, Date date) {
+        return super.incMap(person, value * line.length(), line, date);
     }
 
 }
