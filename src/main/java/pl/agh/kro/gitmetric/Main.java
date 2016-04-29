@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package pl.agh.kro.gitmetric;
 
 import java.io.File;
@@ -21,7 +16,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import pl.agh.kro.gitmetric.validators.SliderValidator;
 
 /**
- *
  * @author Tomek
  */
 public class Main extends javax.swing.JFrame {
@@ -482,7 +476,11 @@ public class Main extends javax.swing.JFrame {
 //                    + fileChooser.getCurrentDirectory());
             System.out.println("getSelectedFile() : "
                     + fileChooser.getSelectedFile());
-            txtPath.setText(fileChooser.getSelectedFile().toString());
+            if(fileChooser.getSelectedFile().toString().contains("/.git")){
+                txtPath.setText(fileChooser.getSelectedFile().toString());
+            }else{
+                txtPath.setText(fileChooser.getSelectedFile().toString()+"/.git");
+            }
             try {
                 initMyComponents();
             } catch (GitAPIException | IOException ex) {
@@ -581,7 +579,6 @@ public class Main extends javax.swing.JFrame {
             cobBranches.addItem(ref.getName());
         }
 
-        System.out.println("Now including remote branches:");
         call = git.branchList().setListMode(ListMode.ALL).call();
         for (Ref ref : call) {
             cobBranches.addItem(ref.getName());

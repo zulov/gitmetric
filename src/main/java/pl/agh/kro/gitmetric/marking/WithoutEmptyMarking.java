@@ -8,7 +8,6 @@ package pl.agh.kro.gitmetric.marking;
 import java.util.Date;
 
 /**
- *
  * @author Tomek
  */
 public class WithoutEmptyMarking extends BasicMarking {

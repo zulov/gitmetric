@@ -129,7 +129,6 @@ public class GitUtils {
     }
 
     public static void authorsOfFile(Marking marking, Repository repository, ObjectId commitId, String fileName, int lines) {
-        System.out.println(fileName);
         try {
             BlameCommand blamer = new BlameCommand(repository)
                     .setStartCommit(commitId).setFilePath(fileName);
@@ -152,7 +151,6 @@ public class GitUtils {
         } catch (RevisionSyntaxException | GitAPIException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     public static DiffFormatter prepareDiffFormater(Repository repository) {
@@ -165,7 +163,6 @@ public class GitUtils {
     public static int linesNumber(Repository repository, ObjectId commitID, String newPath) {
         try {
             int lines = GitUtils.countFiles(repository, commitID, newPath);
-
             return lines;
         } catch (RevisionSyntaxException | IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
@@ -201,8 +198,6 @@ public class GitUtils {
             }
             revWalk.dispose();
             return r;
-        } catch (IncorrectObjectTypeException ex) {
-            Logger.getLogger(GitUtils.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(GitUtils.class.getName()).log(Level.SEVERE, null, ex);
         }

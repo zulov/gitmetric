@@ -30,9 +30,6 @@ import pl.agh.kro.gitmetric.git.GitUtils;
 import pl.agh.kro.gitmetric.marking.Marking;
 import pl.agh.kro.gitmetric.marking.MarkingFactory;
 
-/**
- * @author Tomek
- */
 public class ComputeThread1 extends Thread {
 
     private String metric;

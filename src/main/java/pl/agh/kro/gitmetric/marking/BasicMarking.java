@@ -1,6 +1,5 @@
 package pl.agh.kro.gitmetric.marking;
 
-import java.util.Calendar;
 import java.util.Date;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
