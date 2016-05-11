@@ -8,12 +8,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand.ListMode;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import pl.agh.kro.gitmetric.validators.SliderValidator;
+import pl.agh.kro.gitmetric.validators.SpinnerValidator;
 
 /**
  * @author Tomek
@@ -46,19 +48,19 @@ public class Main extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         btnCalculate = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        lstUsers = new javax.swing.JList<String>();
+        lstUsers = new javax.swing.JList<>();
         lstUsers.setSelectionModel(new DefaultListSelectionModel() {     @Override     public void setSelectionInterval(int index0, int index1) {         if(super.isSelectedIndex(index0)) {             super.removeSelectionInterval(index0, index1);         }         else {             super.addSelectionInterval(index0, index1);         }     } });
         lblMinCommit = new javax.swing.JLabel();
         lblMaxCommit = new javax.swing.JLabel();
         prbCompute = new javax.swing.JProgressBar();
         sldMinCommit = new javax.swing.JSlider();
         sldMaxCommit = new javax.swing.JSlider();
-        cobMetric = new javax.swing.JComboBox<String>();
+        cobMetric = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
-        cobBranches = new javax.swing.JComboBox<String>();
+        cobBranches = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        lstExt = new javax.swing.JList<String>();
+        lstExt = new javax.swing.JList<>();
         lstExt.setSelectionModel(new DefaultListSelectionModel() {
             @Override
             public void setSelectionInterval(int index0, int index1) {
@@ -78,7 +80,7 @@ public class Main extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         lblTime = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        lstFileType = new javax.swing.JList<String>();
+        lstFileType = new javax.swing.JList<>();
         lstFileType.setSelectionModel(new DefaultListSelectionModel() {     @Override     public void setSelectionInterval(int index0, int index1) {         if(super.isSelectedIndex(index0)) {             super.removeSelectionInterval(index0, index1);         }         else {             super.addSelectionInterval(index0, index1);         }     } });
         btnBrowse = new javax.swing.JButton();
         lblFromCommit = new javax.swing.JLabel();
@@ -131,7 +133,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        cobMetric.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Linie kodu", "Bez pustych", "Dlugosc" }));
+        cobMetric.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Linie kodu", "Bez pustych", "Dlugosc" }));
 
         jLabel2.setText("Metryka:");
 
@@ -151,16 +153,28 @@ public class Main extends javax.swing.JFrame {
 
         lblMinSize.setText("Od:");
 
+        spnMaxSize.setModel(new javax.swing.SpinnerNumberModel(50000, 0, null, 1));
         spnMaxSize.setValue(50000);
         spnMaxSize.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spnMaxSizeStateChanged(evt);
             }
         });
+        spnMaxSize.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                spnMaxSizePropertyChange(evt);
+            }
+        });
 
+        spnMinSize.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
         spnMinSize.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spnMinSizeStateChanged(evt);
+            }
+        });
+        spnMinSize.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                spnMinSizePropertyChange(evt);
             }
         });
 
@@ -192,7 +206,6 @@ public class Main extends javax.swing.JFrame {
         lblToCommit.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         lblToCommit.setText("-");
         lblToCommit.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        lblToCommit.setMinimumSize(new java.awt.Dimension(8, 18));
 
         javax.swing.GroupLayout pnlSettingLayout = new javax.swing.GroupLayout(pnlSetting);
         pnlSetting.setLayout(pnlSettingLayout);
@@ -269,7 +282,7 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(lblMaxCommit)
                     .addComponent(sldMaxCommit, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0)
-                .addComponent(lblToCommit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(lblToCommit)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlSettingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
@@ -405,7 +418,9 @@ public class Main extends javax.swing.JFrame {
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
 //        ComputeThread computeThread = new ComputeThread();
 //        computeThread.setCommits(sldMaxCommit.getMaximum()-sldMaxCommit.getValue(), sldMinCommit.getMaximum()-sldMinCommit.getValue());
-        
+        if( cobBranches.getSelectedIndex()<0){
+            return;
+        }
         ComputeThread2 computeThread = new ComputeThread2();
         computeThread.setCommits(sldMinCommit.getMaximum() - sldMinCommit.getValue(), sldMaxCommit.getMaximum() - sldMaxCommit.getValue());
         computeThread.setLabels(lblFiles, lblTime, lblProgres);
@@ -472,10 +487,7 @@ public class Main extends javax.swing.JFrame {
         fileChooser.setAcceptAllFileFilterUsed(false);
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
-//            System.out.println("getCurrentDirectory(): "
-//                    + fileChooser.getCurrentDirectory());
-            System.out.println("getSelectedFile() : "
-                    + fileChooser.getSelectedFile());
+            System.out.println("getSelectedFile() : " + fileChooser.getSelectedFile());
             if(fileChooser.getSelectedFile().toString().contains("/.git")){
                 txtPath.setText(fileChooser.getSelectedFile().toString());
             }else{
@@ -490,6 +502,14 @@ public class Main extends javax.swing.JFrame {
             System.out.println("No Selection ");
         }
     }//GEN-LAST:event_btnBrowseActionPerformed
+
+    private void spnMinSizePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_spnMinSizePropertyChange
+        spinnerValiator.validate(spnMinSize,spnMaxSize);
+    }//GEN-LAST:event_spnMinSizePropertyChange
+
+    private void spnMaxSizePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_spnMaxSizePropertyChange
+        spinnerValiator.validate(spnMinSize,spnMaxSize);
+    }//GEN-LAST:event_spnMaxSizePropertyChange
 
     /**
      * @param args the command line arguments
@@ -570,10 +590,14 @@ public class Main extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private SliderValidator sliderValidator = new SliderValidator();
-
+    private SpinnerValidator spinnerValiator  = new SpinnerValidator();
+    
     private void initMyComponents() throws GitAPIException, IOException {
         Git git = GitUtils.getGit(txtPath.getText());
         List<Ref> call = git.branchList().call();
+        if(call.size()<=0){
+            JOptionPane.showMessageDialog(this,"Podana ścieżka nie jest poprawna.","Błąd ścieżki", JOptionPane.ERROR_MESSAGE);
+        }
         cobBranches.removeAllItems();
         for (Ref ref : call) {
             cobBranches.addItem(ref.getName());
