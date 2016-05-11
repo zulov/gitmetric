@@ -488,10 +488,10 @@ public class Main extends javax.swing.JFrame {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             System.out.println("getSelectedFile() : " + fileChooser.getSelectedFile());
-            if(fileChooser.getSelectedFile().toString().contains("/.git")){
+            if(fileChooser.getSelectedFile().toString().contains(".git")){
                 txtPath.setText(fileChooser.getSelectedFile().toString());
             }else{
-                txtPath.setText(fileChooser.getSelectedFile().toString()+"/.git");
+                txtPath.setText(fileChooser.getSelectedFile().toString()+"\\.git");
             }
             try {
                 initMyComponents();
